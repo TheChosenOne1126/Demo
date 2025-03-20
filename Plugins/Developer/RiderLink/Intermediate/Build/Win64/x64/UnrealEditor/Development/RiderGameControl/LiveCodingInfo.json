@@ -1,0 +1,9 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.RiderGameControl.cpp.obj": [
+			"PerModuleInline.gen.cpp.obj",
+			"RiderGameControl.cpp.obj"
+		]
+	}
+}

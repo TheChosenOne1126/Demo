@@ -1,0 +1,41 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "GlobalTags.h"
+
+namespace GlobalTags
+{
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputMoveTag, "InputTag.Move", "Input Tag For Move(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(InputLookMouseTag, "InputTag.Look(Mouse)", "Input Tag For Look Mouse(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityActivationInputPressedTag, "Ability.Activation.InputPressed", "Ability Activation Input Pressed(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityActivationInputHeldTag, "Ability.Activation.InputHeld", "Ability Activation Input Held(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityActivationAutoTag, "Ability.Activation.Auto", "Ability Activation Auto(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityConfirmTag, "Ability.Confirm", "Ability Confirm(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityCancelTag, "Ability.Cancel", "Ability Cancel(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityUpdateLevelTag, "Ability.UpdateLevel", "Ability Update Level(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityOnGivenTag, "Ability.OnGiven", "Ability Give to player(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilitySystemInitTag, "Ability.SystemInit", "Ability System is already Initialized(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityUltimateTag, "Ability.Ultimate", "Ability type is ultimate(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EventDeadTag, "Event.Dead", "Pawn is dead to trigger this Event(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EventMovementWalkTag, "Event.Movement.Walk", "Pawn Velocity is larger than 0(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EventOnHitTag, "Event.OnHit", "Pawn is hit(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(StateBlockHpRegenTag, "State.Block.HpRegen", "Hp cannot regen(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(StateBlockMpRegenTag, "State.Block.MpRegen", "Mp cannot regen(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(HeroStrengthTag, "Hero.Strength", "Hero main attribute is strength(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(HeroIntelligenceTag, "Hero.Intelligence", "Hero main attribute is intelligence(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(HeroAgilityTag, "Hero.Agility", "Hero main attribute is agility(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerAbilityMaxLevelTag, "SetByCaller.AbilityMaxLevel", "Set Max Ability Level when Ability is Given(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerCooldownValueTag, "SetByCaller.CooldownValue", "Set the Cooldown Value when Ability ApplyCooldown(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerPerHpCostTag, "SetByCaller.Cost.Percentage.Hp", "Ability Cost Percentage Value according to Hp Attribute(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerPerMaxHpCostTag, "SetByCaller.Cost.Percentage.MaxHp", "Ability Cost Percentage Value according to MaxHp Attribute(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerPerMpCostTag, "SetByCaller.Cost.Percentage.Mp", "Ability Cost Percentage Value according to Mp Attribute(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerPerMaxMpCostTag, "SetByCaller.Cost.Percentage.MaxMp", "Ability Cost Percentage Value according to MaxHp Attribute(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerFixedDamageTag, "SetByCaller.Damage.Fixed", "Ability Fixed Damage Value(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerPerHpDamageTag, "SetByCaller.Damage.Percentage.Hp", "Ability Percentage Damage Value according to Hp Attribute(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerPerMaxHpDamageTag, "SetByCaller.Damage.Percentage.MaxHp", "Ability Percentage Damage Value according to MaxHp Attribute(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerPerDamageAttributeTag, "SetByCaller.Attribute.Percentage.Damage", "Ability Damage Value according to Damage Attribute(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(SetByCallerPerExtraDamageAttributeTag, "SetByCaller.Attribute.Percentage.ExtraDamage", "Ability Damage Value according to ExtraDamage Attribute(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AttributeBaseAbilityPointChangedTag, "Attribute.BaseAbilityPointChanged", "Base Ability Point Changed(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AttributeUltimateAbilityPointChangedTag, "Attribute.UltimateAbilityPointChanged", "Ultimate Ability Point Changed(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EffectDamageNormalAttackTag, "Effect.Damage.NormalAttack", "Pawn is damaged by normally attack(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EffectDamageMissTag, "Effect.Damage.Miss", "Pawn is missed by one damage")
+}

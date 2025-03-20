@@ -1,0 +1,10 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.RiderLogging.cpp.obj": [
+			"PerModuleInline.gen.cpp.obj",
+			"RiderLogging.cpp.obj",
+			"RiderOutputDevice.cpp.obj"
+		]
+	}
+}
