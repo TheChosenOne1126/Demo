@@ -56,7 +56,7 @@ void UDGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, 
 
 	if (Spec.Level <= 0)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: AbilitySpec Level is less or equal than 0"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Log, FString::Printf(TEXT("%hs: AbilitySpec Level is less or equal than 0"), __FUNCTION__));
 		return;
 	}
 
@@ -246,15 +246,4 @@ void UDGameplayAbility::EndAbility(
 	{
 		ActorInfo->AbilitySystemComponent->RegisterGameplayTagEvent(ActivationCancelTag).RemoveAll(this);
 	}
-}
-
-UGameplayTask* UDGameplayAbility::FindTaskByName(FName TaskInstanceName)
-{
-	const int32 Index = ActiveTasks.IndexOfByPredicate(
-		[TaskInstanceName](const TObjectPtr<UGameplayTask> Task) -> bool
-		{
-			return Task && Task->GetInstanceName() == TaskInstanceName;
-		});
-
-	return Index == INDEX_NONE ? nullptr : ActiveTasks[Index];
 }
