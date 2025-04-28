@@ -16,7 +16,6 @@ namespace GlobalTags
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilitySystemInitTag, "Ability.SystemInit", "Ability System is already Initialized(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityUltimateTag, "Ability.Ultimate", "Ability type is ultimate(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EventDeadTag, "Event.Dead", "Pawn is dead to trigger this Event(Native)")
-	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EventMovementWalkTag, "Event.Movement.Walk", "Pawn Velocity is larger than 0(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EventOnHitTag, "Event.OnHit", "Pawn is hit(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(StateBlockHpRegenTag, "State.Block.HpRegen", "Hp cannot regen(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(StateBlockMpRegenTag, "State.Block.MpRegen", "Mp cannot regen(Native)")

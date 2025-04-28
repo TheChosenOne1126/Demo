@@ -10,6 +10,7 @@
 #include "Global/DAssetManager.h"
 #include "Global/GlobalTags.h"
 #include "Global/Statics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void AHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -78,6 +79,11 @@ void AHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AHeroCharacter::DestroyPlayerInputComponent()
 {
+	if (UKismetSystemLibrary::IsDedicatedServer(this))
+	{
+		return;
+	}
+	
 	UEnhancedInputComponent* DEnhancedInputComp = Cast<UEnhancedInputComponent>(InputComponent);
 	if (!IsValid(DEnhancedInputComp))
 	{
@@ -199,7 +205,7 @@ void AHeroCharacter::InputForMove(const FInputActionValue& InputActionValue)
 
 	if (InputVector.Y != 0.f)
 	{
-		AddMovementInput(MoveRotator.RotateVector(FVector::UpVector), InputVector.Y);
+		AddMovementInput(MoveRotator.RotateVector(FVector::ForwardVector), InputVector.Y);
 	}
 }
 

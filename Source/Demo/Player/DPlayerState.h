@@ -23,13 +23,13 @@ class DEMO_API ADPlayerState : public APlayerState, public IAbilitySystemInterfa
 public:
 	ADPlayerState();
 
-	virtual void PostInitializeComponents() override;
-	
 	virtual void PostUnregisterAllComponents() override;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
-	virtual void OnPawnPossessed(ADCharacter* Character);
+	virtual void InitAbilitySystem(ADCharacter* Character);
+
+	virtual void RegisterAttributes();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastShowDamageNumber(float DamageValue, FGameplayTagContainer DamageTags);

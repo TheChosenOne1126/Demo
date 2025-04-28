@@ -22,12 +22,4 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void OnRep_PlayerState() override;
-
-	virtual void BeginPlay() override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-protected:
-	UFUNCTION()
-	void OnVelocityChanged(float DeltaSeconds, FVector OldLocation, FVector OldVelocity);
 };

@@ -20,51 +20,25 @@ ADPlayerState::ADPlayerState()
 
 	CreateDefaultSubobject<UBaseAttributeSet>(TEXT("BaseAttributeSet"));
 
-	BaseAttributeViewModel = CreateDefaultSubobject<UBaseAttributeViewModel>(TEXT("BaseAttributeViewModel"));
-
 	SetNetUpdateFrequency(100.f);
-}
-
-void ADPlayerState::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	if (!IsValid(Asc))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid DAbilitySystemComponent"), __FUNCTION__));
-		return;
-	}
-
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetHpAttribute(), this, &ThisClass::OnHpAttributeChange);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMaxHpAttribute(), this, &ThisClass::OnMaxHpAttributeChange);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetHpRegenAttribute(), this, &ThisClass::OnHpRegenAttributeChange);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMpAttribute(), this, &ThisClass::OnMpAttributeChange);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMaxMpAttribute(), this, &ThisClass::OnMaxMpAttributeChange);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMpRegenAttribute(), this, &ThisClass::OnMpRegenAttributeChange);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetLvAttribute(), this, &ThisClass::OnLvAttributeChange);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetDamageAttribute(), this, &ThisClass::OnDamageAttributeChange, false);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetExtraDamageAttribute(), this, &ThisClass::OnDamageAttributeChange, true);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetArmorAttribute(), this, &ThisClass::OnArmorAttributeChange, false);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetExtraArmorAttribute(), this, &ThisClass::OnArmorAttributeChange, true);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMagicResistAttribute(), this, &ThisClass::OnMagicResistAttributeChange, false);
-	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetExtraMagicResistAttribute(), this, &ThisClass::OnMagicResistAttributeChange, true);
 }
 
 void ADPlayerState::PostUnregisterAllComponents()
 {
-	if (!IsValid(Asc))
+	if (IsValid(Asc))
+	{
+		Asc->UnregisterAllAttributeValuesChange();
+
+		if (HasAuthority())
+		{
+			Asc->ClearAllAbilities();
+
+			Asc->RemoveLooseGameplayTag(GlobalTags::AbilitySystemInitTag);
+		}
+	}
+	else
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid DAbilitySystemComponent"), __FUNCTION__));
-		return;
-	}
-
-	Asc->UnregisterAllAttributeValuesChange();
-
-	if (HasAuthority())
-	{
-		Asc->ClearAllAbilities();
-
-		Asc->RemoveLooseGameplayTag(GlobalTags::AbilitySystemInitTag);
 	}
 
 	Super::PostUnregisterAllComponents();
@@ -75,7 +49,7 @@ UAbilitySystemComponent* ADPlayerState::GetAbilitySystemComponent() const
 	return Asc;
 }
 
-void ADPlayerState::OnPawnPossessed(ADCharacter* Character)
+void ADPlayerState::InitAbilitySystem(ADCharacter* Character)
 {
 	if (!IsValid(Asc))
 	{
@@ -137,6 +111,8 @@ void ADPlayerState::OnPawnPossessed(ADCharacter* Character)
 			Asc->GiveAbility(AbilitySpec);
 		}
 
+		RegisterAttributes();
+
 		Asc->AddLooseGameplayTag(GlobalTags::AbilitySystemInitTag);
 	}
 	else
@@ -151,6 +127,34 @@ void ADPlayerState::OnPawnPossessed(ADCharacter* Character)
 		Asc->ApplyModToAttribute(UBaseAttributeSet::GetHpAttribute(), EGameplayModOp::Override, BaseAttributeSet->GetMaxHp());
 		Asc->ApplyModToAttribute(UBaseAttributeSet::GetMpAttribute(), EGameplayModOp::Override, BaseAttributeSet->GetMaxMp());
 	}
+}
+
+void ADPlayerState::RegisterAttributes()
+{
+	if (!IsValid(Asc))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid DAbilitySystemComponent"), __FUNCTION__));
+		return;
+	}
+
+	if (!IsValid(BaseAttributeViewModel) && !UKismetSystemLibrary::IsDedicatedServer(this))
+	{
+		BaseAttributeViewModel = NewObject<UBaseAttributeViewModel>(this, TEXT("BaseAttributeViewModel"));
+	}
+
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetHpAttribute(), this, &ThisClass::OnHpAttributeChange);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMaxHpAttribute(), this, &ThisClass::OnMaxHpAttributeChange);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetHpRegenAttribute(), this, &ThisClass::OnHpRegenAttributeChange);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMpAttribute(), this, &ThisClass::OnMpAttributeChange);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMaxMpAttribute(), this, &ThisClass::OnMaxMpAttributeChange);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMpRegenAttribute(), this, &ThisClass::OnMpRegenAttributeChange);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetLvAttribute(), this, &ThisClass::OnLvAttributeChange);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetDamageAttribute(), this, &ThisClass::OnDamageAttributeChange, false);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetExtraDamageAttribute(), this, &ThisClass::OnDamageAttributeChange, true);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetArmorAttribute(), this, &ThisClass::OnArmorAttributeChange, false);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetExtraArmorAttribute(), this, &ThisClass::OnArmorAttributeChange, true);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetMagicResistAttribute(), this, &ThisClass::OnMagicResistAttributeChange, false);
+	Asc->RegisterAttributeValueChange(UBaseAttributeSet::GetExtraMagicResistAttribute(), this, &ThisClass::OnMagicResistAttributeChange, true);
 }
 
 void ADPlayerState::NetMulticastShowDamageNumber_Implementation(float DamageValue, FGameplayTagContainer DamageTags)
@@ -175,17 +179,20 @@ void ADPlayerState::OnHpAttributeChange(const FOnAttributeChangeData& HpData)
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"),
 		__FUNCTION__, HpData.NewValue, HpData.OldValue));
 
-	if (!IsValid(BaseAttributeViewModel))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
-		return;
-	}
-
-	BaseAttributeViewModel->SetHp(HpData.NewValue);
-
 	if (HpData.NewValue <= 0.f)
 	{
 		Asc->AddLooseGameplayTag(GlobalTags::EventDeadTag);
+	}
+
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
+	{
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
+			return;
+		}
+
+		BaseAttributeViewModel->SetHp(HpData.NewValue);
 	}
 }
 
@@ -194,14 +201,17 @@ void ADPlayerState::OnMaxHpAttributeChange(const FOnAttributeChangeData& MaxHpDa
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"),
 		__FUNCTION__, MaxHpData.NewValue, MaxHpData.OldValue));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
-		return;
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
+			return;
+		}
+
+		BaseAttributeViewModel->SetMaxHp(MaxHpData.NewValue);
 	}
-
-	BaseAttributeViewModel->SetMaxHp(MaxHpData.NewValue);
-
+	
 	if (!HasAuthority())
 	{
 		return;
@@ -238,13 +248,16 @@ void ADPlayerState::OnHpRegenAttributeChange(const FOnAttributeChangeData& HpReg
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"),
 		__FUNCTION__, HpRegenData.NewValue, HpRegenData.OldValue));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
-		return;
-	}
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
+			return;
+		}
 
-	BaseAttributeViewModel->SetHpRegen(HpRegenData.NewValue);
+		BaseAttributeViewModel->SetHpRegen(HpRegenData.NewValue);
+	}
 }
 
 void ADPlayerState::OnMpAttributeChange(const FOnAttributeChangeData& MpData)
@@ -252,13 +265,16 @@ void ADPlayerState::OnMpAttributeChange(const FOnAttributeChangeData& MpData)
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"),
 		__FUNCTION__, MpData.NewValue, MpData.OldValue));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
-		return;
-	}
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
+			return;
+		}
 
-	BaseAttributeViewModel->SetMp(MpData.NewValue);
+		BaseAttributeViewModel->SetMp(MpData.NewValue);
+	}
 }
 
 void ADPlayerState::OnMaxMpAttributeChange(const FOnAttributeChangeData& MaxMpData)
@@ -266,14 +282,17 @@ void ADPlayerState::OnMaxMpAttributeChange(const FOnAttributeChangeData& MaxMpDa
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"),
 		__FUNCTION__, MaxMpData.NewValue, MaxMpData.OldValue));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
-		return;
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
+			return;
+		}
+
+		BaseAttributeViewModel->SetMaxHp(MaxMpData.NewValue);
 	}
-
-	BaseAttributeViewModel->SetMaxHp(MaxMpData.NewValue);
-
+	
 	if (!HasAuthority())
 	{
 		return;
@@ -307,15 +326,19 @@ void ADPlayerState::OnMaxMpAttributeChange(const FOnAttributeChangeData& MaxMpDa
 
 void ADPlayerState::OnMpRegenAttributeChange(const FOnAttributeChangeData& MpRegenData)
 {
-	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"), __FUNCTION__, MpRegenData.NewValue, MpRegenData.OldValue));
+	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"),
+		__FUNCTION__, MpRegenData.NewValue, MpRegenData.OldValue));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
-		return;
-	}
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
+			return;
+		}
 
-	BaseAttributeViewModel->SetMpRegen(MpRegenData.NewValue);
+		BaseAttributeViewModel->SetMpRegen(MpRegenData.NewValue);
+	}
 }
 
 void ADPlayerState::OnLvAttributeChange(const FOnAttributeChangeData& LvData)
@@ -323,13 +346,16 @@ void ADPlayerState::OnLvAttributeChange(const FOnAttributeChangeData& LvData)
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"),
 		__FUNCTION__, LvData.NewValue, LvData.OldValue));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
-		return;
-	}
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
+			return;
+		}
 
-	BaseAttributeViewModel->SetLv(LvData.NewValue);
+		BaseAttributeViewModel->SetLv(LvData.NewValue);
+	}
 }
 
 void ADPlayerState::OnDamageAttributeChange(const FOnAttributeChangeData& DamageData, bool bIsExtra)
@@ -337,20 +363,23 @@ void ADPlayerState::OnDamageAttributeChange(const FOnAttributeChangeData& Damage
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f - %s"),
 		__FUNCTION__, DamageData.NewValue, DamageData.OldValue, bIsExtra ? TEXT("Extra") : TEXT("Base")));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel - %s"),
-			__FUNCTION__, bIsExtra ? TEXT("Extra") : TEXT("Base")));
-		return;
-	}
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel - %s"),
+				__FUNCTION__, bIsExtra ? TEXT("Extra") : TEXT("Base")));
+			return;
+		}
 
-	if (bIsExtra)
-	{
-		BaseAttributeViewModel->SetExtraDamage(DamageData.NewValue);
-	}
-	else
-	{
-		BaseAttributeViewModel->SetDamage(DamageData.NewValue);
+		if (bIsExtra)
+		{
+			BaseAttributeViewModel->SetExtraDamage(DamageData.NewValue);
+		}
+		else
+		{
+			BaseAttributeViewModel->SetDamage(DamageData.NewValue);
+		}
 	}
 }
 
@@ -359,20 +388,23 @@ void ADPlayerState::OnArmorAttributeChange(const FOnAttributeChangeData& ArmorDa
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f - %s"),
 	__FUNCTION__, ArmorData.NewValue, ArmorData.OldValue, bIsExtra ? TEXT("Extra") : TEXT("Base")));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel - %s"),
-			__FUNCTION__, bIsExtra ? TEXT("Extra") : TEXT("Base")));
-		return;
-	}
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel - %s"),
+				__FUNCTION__, bIsExtra ? TEXT("Extra") : TEXT("Base")));
+			return;
+		}
 
-	if (bIsExtra)
-	{
-		BaseAttributeViewModel->SetExtraArmor(ArmorData.NewValue);
-	}
-	else
-	{
-		BaseAttributeViewModel->SetArmor(ArmorData.NewValue);
+		if (bIsExtra)
+		{
+			BaseAttributeViewModel->SetExtraArmor(ArmorData.NewValue);
+		}
+		else
+		{
+			BaseAttributeViewModel->SetArmor(ArmorData.NewValue);
+		}
 	}
 }
 
@@ -381,20 +413,23 @@ void ADPlayerState::OnMagicResistAttributeChange(const FOnAttributeChangeData& M
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f - %s"),
 		__FUNCTION__, MagicResistData.NewValue, MagicResistData.OldValue, bIsExtra ? TEXT("Extra") : TEXT("Base")));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel - %s"),
-			__FUNCTION__, bIsExtra ? TEXT("Extra") : TEXT("Base")));
-		return;
-	}
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel - %s"),
+				__FUNCTION__, bIsExtra ? TEXT("Extra") : TEXT("Base")));
+			return;
+		}
 
-	if (bIsExtra)
-	{
-		BaseAttributeViewModel->SetExtraMagicResist(MagicResistData.NewValue);
-	}
-	else
-	{
-		BaseAttributeViewModel->SetMagicResist(MagicResistData.NewValue);
+		if (bIsExtra)
+		{
+			BaseAttributeViewModel->SetExtraMagicResist(MagicResistData.NewValue);
+		}
+		else
+		{
+			BaseAttributeViewModel->SetMagicResist(MagicResistData.NewValue);
+		}
 	}
 }
 
@@ -403,11 +438,14 @@ void ADPlayerState::OnAttackSpeedAttributeChange(const FOnAttributeChangeData& A
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"),
 		__FUNCTION__, AttackSpeedData.NewValue, AttackSpeedData.OldValue));
 
-	if (!IsValid(BaseAttributeViewModel))
+	if (!UKismetSystemLibrary::IsDedicatedServer(this))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
-		return;
-	}
+		if (!IsValid(BaseAttributeViewModel))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
+			return;
+		}
 
-	BaseAttributeViewModel->SetAttackSpeed(AttackSpeedData.NewValue);
+		BaseAttributeViewModel->SetAttackSpeed(AttackSpeedData.NewValue);
+	}
 }

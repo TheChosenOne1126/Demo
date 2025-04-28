@@ -4,9 +4,23 @@
 #include "Animation/DAnimInstance.h"
 #include "Global/GlobalTags.h"
 #include "Global/Statics.h"
+#include "Player/DCharacter.h"
+#include "Player/DPlayerState.h"
 
 void UDAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
+	// Check the owner actor is subclass of ADPlayerState
+	if (!IsValid(Cast<ADPlayerState>(InOwnerActor)))
+	{
+		return;
+	}
+
+	// Check the avatar actor is subclass of ADCharacter
+	if (!IsValid(Cast<ADCharacter>(InAvatarActor)))
+	{
+		return;
+	}
+	
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
 	UDAnimInstance* AnimInstance = Cast<UDAnimInstance>(AbilityActorInfo->GetAnimInstance());

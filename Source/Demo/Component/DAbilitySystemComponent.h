@@ -49,6 +49,11 @@ void UDAbilitySystemComponent::RegisterAttributeValueChange(
 	void(TOwner::* Callback)(const FOnAttributeChangeData&, VarTypes...),
 	VarTypes&&... Vars)
 {
+	if (AttributeValueChangeDelegateMap.Contains(Attribute))
+	{
+		return;
+	}
+	
 	AttributeValueChangeDelegateMap.Emplace(Attribute) = GetGameplayAttributeValueChangeDelegate(Attribute)
 		.AddUObject(Owner, Callback, Forward<VarTypes>(Vars)...);
 }

@@ -3,7 +3,6 @@
 #include "DCharacter.h"
 #include "DPlayerState.h"
 #include "Component/DAbilitySystemComponent.h"
-#include "Global/GlobalTags.h"
 #include "Global/Statics.h"
 
 UAbilitySystemComponent* ADCharacter::GetAbilitySystemComponent() const
@@ -49,7 +48,7 @@ void ADCharacter::PossessedBy(AController* NewController)
 	
 	Asc->InitAbilityActorInfo(Ps, this);
 
-	Ps->OnPawnPossessed(this);
+	Ps->InitAbilitySystem(this);
 }
 
 void ADCharacter::OnRep_PlayerState()
@@ -62,56 +61,18 @@ void ADCharacter::OnRep_PlayerState()
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
-	
-	Asc->InitAbilityActorInfo(GetPlayerState(), this);
-}
 
-void ADCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (OnCharacterMovementUpdated.IsAlreadyBound(this, &ThisClass::OnVelocityChanged))
+	ADPlayerState* Ps = GetPlayerState<ADPlayerState>();
+	if (!IsValid(Ps))
 	{
-		return;
-	}
-
-	OnCharacterMovementUpdated.AddDynamic(this, &ThisClass::OnVelocityChanged);
-}
-
-void ADCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	if (OnCharacterMovementUpdated.IsAlreadyBound(this, &ThisClass::OnVelocityChanged))
-	{
-		OnCharacterMovementUpdated.RemoveDynamic(this, &ThisClass::OnVelocityChanged);
-	}
-	
-	UAbilitySystemComponent* Asc = GetAbilitySystemComponent();
-	if (!IsValid(Asc))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid DPlayerState"), __FUNCTION__));
 		return;
 	}
 	
-	Asc->ClearActorInfo();
-	
-	Super::EndPlay(EndPlayReason);
-}
+	Asc->InitAbilityActorInfo(Ps, this);
 
-void ADCharacter::OnVelocityChanged(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
-{
-	UAbilitySystemComponent* Asc = GetAbilitySystemComponent();
-	if (!IsValid(Asc))
+	if (!IsLocallyControlled())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
-		return;
-	}
-
-	if (OldVelocity.Length() > 0.f)
-	{
-		Asc->SetLooseGameplayTagCount(GlobalTags::EventMovementWalkTag, 1);
-	}
-	else
-	{
-		Asc->RemoveLooseGameplayTag(GlobalTags::EventMovementWalkTag);
+		Ps->RegisterAttributes();
 	}
 }

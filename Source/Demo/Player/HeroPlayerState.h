@@ -17,15 +17,18 @@ class DEMO_API AHeroPlayerState : public ADPlayerState
 public:
 	AHeroPlayerState();
 	
-	virtual void PostInitializeComponents() override;
+	virtual void InitAbilitySystem(ADCharacter* Character) override;
 
-	virtual void OnPawnPossessed(ADCharacter* Character) override;
+	virtual void RegisterAttributes() override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerUpdateAbilityLevel(FGameplayAbilitySpecHandle AbilitySpecHandle);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastUpdateAbilityLevel(FGameplayAbilitySpecHandle AbilitySpecHandle);
+
+	UFUNCTION(Client, Reliable)
+	void ClientInitAbilitySystem();
 	
 	UPROPERTY()
 	TObjectPtr<UHeroAttributeViewModel> HeroAttributeViewModel;
