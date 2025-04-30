@@ -82,19 +82,19 @@ FGuid UMessageSubsystem::RegisterMessageInternal(
 
 void UMessageSubsystem::UnregisterMessage(FGameplayTag MessageTag, FGuid MessageId)
 {
-	FMessageList* MessageList = MessageLists.FindByPredicate(
+	const int32 Index = MessageLists.IndexOfByPredicate(
 		[MessageTag](const FMessageList& List) -> bool
 		{
 			return List.Tag == MessageTag;
 		});
 
-	if (!MessageList)
+	if (Index == INDEX_NONE)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid MessageList"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in MessageLists"), __FUNCTION__));
 		return;
 	}
 
-	MessageList->Items.RemoveAllSwap(
+	MessageLists[Index].Items.RemoveAllSwap(
 		[MessageId](const FMessageItem& Item) -> bool
 		{
 			return Item.Id == MessageId;
@@ -109,19 +109,19 @@ void UMessageSubsystem::BroadcastMessageInternal(FGameplayTag MessageTag, const 
 		return;
 	}
 	
-	FMessageList* MessageList = MessageLists.FindByPredicate(
+	const int32 Index = MessageLists.IndexOfByPredicate(
 		[MessageTag](const FMessageList& List) -> bool
 		{
 			return List.Tag == MessageTag;
 		});
 
-	if (!MessageList)
+	if (Index == INDEX_NONE)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid MessageList"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in MessageLists"), __FUNCTION__));
 		return;
 	}
 
-	for	(const FMessageItem& MessageItem : MessageList->Items)
+	for	(const FMessageItem& MessageItem : MessageLists[Index].Items)
 	{
 		if (MessageStructType->IsChildOf(MessageItem.StructType))
 		{

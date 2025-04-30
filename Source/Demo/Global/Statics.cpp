@@ -66,19 +66,19 @@ UAnimMontage* UStatics::GetDeadMontage(const UDGameplayAbility* Ability)
 		return nullptr;
 	}
 	
-	FPawnData* PawnDataPtr = PawnDataAsset->PawnDataArr.FindByPredicate(
+	const int32 Index = PawnDataAsset->PawnDataArr.IndexOfByPredicate(
 		[AvatarClass](const FPawnData& PawnData) -> bool
 		{
 			return AvatarClass->IsChildOf(PawnData.PawnClass);
 		});
 
-	if (!PawnDataPtr)
+	if (Index == INDEX_NONE)
 	{
-		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: nullptr PawnDataPtr"), __FUNCTION__));
+		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: none Index in PawnDataArr"), __FUNCTION__));
 		return nullptr;
 	}
 
-	return PawnDataPtr->DeadMontage;
+	return PawnDataAsset->PawnDataArr[Index].DeadMontage;
 }
 
 void UStatics::Log(const UObject* Object, ELogType Type, const FString& String, bool bDisplayToScreen)

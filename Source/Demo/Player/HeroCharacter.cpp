@@ -25,19 +25,19 @@ void AHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		return;
 	}
 
-	const FPawnData* PawnDataPtr = PawnDataAsset->PawnDataArr.FindByPredicate(
+	const int32 Index = PawnDataAsset->PawnDataArr.IndexOfByPredicate(
 		[this](const FPawnData& PawnData) -> bool
 		{
 			return PawnData.PawnClass == this->GetClass();
 		});
 
-	if (!PawnDataPtr)
+	if (Index == INDEX_NONE)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: nullptr PawnDataPtr"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in PawnDataArr"), __FUNCTION__));
 		return;
 	}
 
-	const UInputDataAsset* InputDataAsset = PawnDataPtr->InputDataAsset;
+	const UInputDataAsset* InputDataAsset = PawnDataAsset->PawnDataArr[Index].InputDataAsset;
 	if (!IsValid(InputDataAsset))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UInputDataAsset"), __FUNCTION__));
@@ -129,47 +129,47 @@ void AHeroCharacter::BindInputActions(UInputComponent* PlayerInputComponent, con
 		return;
 	}
 	
-	const FInputData* InputDataForMove = InputDataAsset->NativeInputs.FindByPredicate(
+	const int32 InputMoveIndex = InputDataAsset->NativeInputs.IndexOfByPredicate(
 		[](const FInputData& InputData) -> bool
 		{
 			return InputData.Tag.MatchesTagExact(GlobalTags::InputMoveTag);
 		});
 	
-	if (!InputDataForMove)
+	if (InputMoveIndex == INDEX_NONE)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Native InputDataForMove"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Input Move Index in NativeInputs"), __FUNCTION__));
 		return;
 	}
 
-	if (!IsValid(InputDataForMove->Action))
+	const UInputAction* InputMoveAction = InputDataAsset->NativeInputs[InputMoveIndex].Action;
+	if (!IsValid(InputMoveAction))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Native InputDataForMove Action"), __FUNCTION__));
 		return;
 	}
 	
-	InputForMoveHandle = EnhancedInputComp->BindAction(InputDataForMove->Action,	ETriggerEvent::Triggered,
-		this, &AHeroCharacter::InputForMove).GetHandle();
+	InputForMoveHandle = EnhancedInputComp->BindAction(InputMoveAction,	ETriggerEvent::Triggered, this, &AHeroCharacter::InputForMove).GetHandle();
 
-	const FInputData* InputDataForLookMouse = InputDataAsset->NativeInputs.FindByPredicate(
+	const int32 InputLookMouseIndex = InputDataAsset->NativeInputs.IndexOfByPredicate(
 		[](const FInputData& InputData) -> bool
 		{
 			return InputData.Tag.MatchesTagExact(GlobalTags::InputLookMouseTag);
 		});
 
-	if (!InputDataForLookMouse)
+	if (InputLookMouseIndex == INDEX_NONE)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Native InputDataForLookMouse"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Input Look Mouse Index in NativeInputs"), __FUNCTION__));
 		return;
 	}
 
-	if (!IsValid(InputDataForLookMouse->Action))
+	const UInputAction* InputLookMouseAction = InputDataAsset->NativeInputs[InputLookMouseIndex].Action;
+	if (!IsValid(InputLookMouseAction))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Native InputDataForLookMouse Action"), __FUNCTION__));
 		return;
 	}
 
-	InputForLookMouseHandle = EnhancedInputComp->BindAction(InputDataForLookMouse->Action, ETriggerEvent::Triggered,
-		this, &AHeroCharacter::InputForLookMouseUp).GetHandle();
+	InputForLookMouseHandle = EnhancedInputComp->BindAction(InputLookMouseAction, ETriggerEvent::Triggered, this, &AHeroCharacter::InputForLookMouseUp).GetHandle();
 
 	for (const FInputData& InputDataForAbility : InputDataAsset->AbilityInputs)
 	{

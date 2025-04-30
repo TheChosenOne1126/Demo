@@ -32,6 +32,7 @@ void AHeroPlayerState::InitAbilitySystem(ADCharacter* Character)
 	Super::InitAbilitySystem(Character);
 
 	float MaxAbilityPoint = 0.f;
+	TArray<FGameplayAbilitySpec> AbilitySlotSpecs;
 	for (FGameplayAbilitySpec& AbilitySpec : Asc->GetActivatableAbilities())
 	{
 		if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityActivationAutoTag))
@@ -50,11 +51,8 @@ void AHeroPlayerState::InitAbilitySystem(ADCharacter* Character)
 	}
 
 	Asc->ApplyModToAttribute(UHeroAttributeSet::GetMaxSpAttribute(), EGameplayModOp::Override, MaxAbilityPoint);
-
-	if (!UKismetSystemLibrary::IsStandalone(this))
-	{
-		ClientInitAbilitySystem();
-	}
+	
+	ClientInitAbilitySystem();
 }
 
 void AHeroPlayerState::RegisterAttributes()
@@ -187,7 +185,10 @@ void AHeroPlayerState::NetMulticastUpdateAbilityLevel_Implementation(FGameplayAb
 
 void AHeroPlayerState::ClientInitAbilitySystem_Implementation()
 {
-	RegisterAttributes();
+	if (!UKismetSystemLibrary::IsStandalone(this))
+	{
+		RegisterAttributes();
+	}
 
 	
 }

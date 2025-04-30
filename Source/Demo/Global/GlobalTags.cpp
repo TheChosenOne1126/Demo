@@ -14,6 +14,7 @@ namespace GlobalTags
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityUpdateLevelTag, "Ability.UpdateLevel", "Ability Update Level(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityOnGivenTag, "Ability.OnGiven", "Ability Give to player(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilitySystemInitTag, "Ability.SystemInit", "Ability System is already Initialized(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilitySlotTag, "Ability.Slot", "Ability Slot Parent Tag(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityUltimateTag, "Ability.Ultimate", "Ability type is ultimate(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EventDeadTag, "Event.Dead", "Pawn is dead to trigger this Event(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EventOnHitTag, "Event.OnHit", "Pawn is hit(Native)")

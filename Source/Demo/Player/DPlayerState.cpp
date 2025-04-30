@@ -68,25 +68,26 @@ void ADPlayerState::InitAbilitySystem(ADCharacter* Character)
 			return;
 		}
 
-		const FPawnData* PawnDataPtr = PawnDataAsset->PawnDataArr.FindByPredicate(
+		const int32 Index = PawnDataAsset->PawnDataArr.IndexOfByPredicate(
 			[Character](const FPawnData& PawnData) -> bool
 			{
 				return PawnData.PawnClass == Character->GetClass();
 			});
 
-		if (!PawnDataPtr)
+		if (Index == INDEX_NONE)
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: nullptr PawnDataPtr"), __FUNCTION__));
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in PawnDataArr"), __FUNCTION__));
 			return;
 		}
-
-		if (!IsValid(PawnDataPtr->AbilityDataAsset))
+		
+		AbilityDataAsset = PawnDataAsset->PawnDataArr[Index].AbilityDataAsset;
+		if (!IsValid(AbilityDataAsset))
 		{
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityDataAsset"), __FUNCTION__));
 			return;
 		}
 
-		const TSubclassOf<UGameplayEffect> EffectClass = PawnDataPtr->AbilityDataAsset->InitialEffectClass;
+		const TSubclassOf<UGameplayEffect> EffectClass = AbilityDataAsset->InitialEffectClass;
 		if (!IsValid(EffectClass))
 		{
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Initial Effect Class"), __FUNCTION__));
@@ -96,7 +97,7 @@ void ADPlayerState::InitAbilitySystem(ADCharacter* Character)
 		const FGameplayEffectSpecHandle EffectSpecHandle = Asc->MakeOutgoingSpec(EffectClass, 1.f, Asc->MakeEffectContext());
 		Asc->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data, Asc->GetPredictionKeyForNewAction());
 
-		for (FAbilityData& AbilityData : PawnDataPtr->AbilityDataAsset->AbilityDataArr)
+		for (FAbilityData& AbilityData : AbilityDataAsset->AbilityDataArr)
 		{
 			if (!IsValid(AbilityData.AbilityClass))
 			{

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayAbilitySpecHandle.h"
 #include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
 #include "AbilityDataAsset.generated.h"
@@ -27,6 +26,9 @@ struct FAbilityData
 
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTagContainer Tags;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UTexture2D> AbilityTexture = nullptr;
 };
 
 UCLASS()

@@ -201,15 +201,15 @@ void UDAbilityTask_SweepTrace::TriggerOnSwept(UPrimitiveComponent* SweepComponen
 		return;
 	}
 
-	FSweptInfo* SweptInfoPtr = SweepInfos.FindByPredicate(
+	const int32 Index = SweepInfos.IndexOfByPredicate(
 		[SweepComponent](const FSweptInfo& SweptInfo) -> bool
 		{
 			return SweptInfo.SweptComponent == SweepComponent;
 		});
 
-	if (!SweptInfoPtr)
+	if (Index == INDEX_NONE)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid SweptInfo"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in SweepInfos"), __FUNCTION__));
 		return;
 	}
 
@@ -222,7 +222,7 @@ void UDAbilityTask_SweepTrace::TriggerOnSwept(UPrimitiveComponent* SweepComponen
 	FGameplayAbilityTargetDataHandle TargetDataHandle;
 	for (const FHitResult& SweepResult : SweepResults)
 	{
-		if (SweptInfoPtr->SweepResults.ContainsByPredicate(
+		if (SweepInfos[Index].SweepResults.ContainsByPredicate(
 			[SweepResult](const FHitResult& InSweepResult) -> bool
 			{
 				return SweepResult.GetActor() == InSweepResult.GetActor();
@@ -231,7 +231,7 @@ void UDAbilityTask_SweepTrace::TriggerOnSwept(UPrimitiveComponent* SweepComponen
 			continue;
 		}
 
-		SweptInfoPtr->SweepResults.Emplace(SweepResult);
+		SweepInfos[Index].SweepResults.Emplace(SweepResult);
 		TargetDataHandle.Add(new FGameplayAbilityTargetData_SingleTargetHit(SweepResult));
 	}
 

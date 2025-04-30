@@ -64,4 +64,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UDAbilitySystemComponent> Asc;
+
+	UPROPERTY()
+	TObjectPtr<UAbilityDataAsset> AbilityDataAsset;
 };
