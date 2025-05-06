@@ -15,18 +15,6 @@ void UDGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
 
-	if (IsLocallyControlled())
-	{
-		UMessageSubsystem* MessageSubsystem = UMessageSubsystem::Get(this);
-		if (!IsValid(MessageSubsystem))
-		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid MessageSubsystem"), __FUNCTION__));
-			return;
-		}
-
-		MessageSubsystem->BroadcastMessage(GlobalTags::AbilityOnGivenTag, Spec.Handle);
-	}
-
 	UGameplayEffect* CooldownEffect = GetCooldownGameplayEffect();
 	if (IsValid(CooldownEffect) && CooldownTags.IsValid())
 	{

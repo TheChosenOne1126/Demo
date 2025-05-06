@@ -44,9 +44,6 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 	
-	UPROPERTY(EditDefaultsOnly, Category = "DAbility")
-	TObjectPtr<UTexture2D> AbilityTexture;
-	
 protected:
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DCommonUserWidget.h"
+#include "DataAsset/AbilityDataAsset.h"
 #include "HUDWidget.generated.h"
 
 class UAbilitySlotWidget;
@@ -14,13 +15,10 @@ class DEMO_API UHUDWidget : public UDCommonUserWidget
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void NativeConstruct() override;
+public:
+	void InitAbilitySlot(const TArray<FAbilityData>& SlotAbilityDataArr);
 
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UHorizontalBox> AbilitySlotBox;
-
-	UPROPERTY()
-	TArray<TObjectPtr<UAbilitySlotWidget>> AbilitySlotWidgets;
 };

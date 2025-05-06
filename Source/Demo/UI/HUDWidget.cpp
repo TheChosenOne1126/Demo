@@ -3,24 +3,26 @@
 #include "HUDWidget.h"
 #include "AbilitySlotWidget.h"
 #include "Components/HorizontalBox.h"
+#include "Global/GlobalTags.h"
 #include "Global/Statics.h"
 
-void UHUDWidget::NativeConstruct()
+void UHUDWidget::InitAbilitySlot(const TArray<FAbilityData>& SlotAbilityDataArr)
 {
-	Super::NativeConstruct();
-
 	if (!IsValid(AbilitySlotBox))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySlotBox"), __FUNCTION__));
 		return;
 	}
 
-	for (UWidget* Child : AbilitySlotBox->GetAllChildren())
+	UMessageSubsystem* MessageSubsystem = UMessageSubsystem::Get(this);
+	if (!IsValid(MessageSubsystem))
 	{
-		UAbilitySlotWidget* AbilitySlotWidget = Cast<UAbilitySlotWidget>(Child);
-		if (IsValid(AbilitySlotWidget))
-		{
-			AbilitySlotWidgets.Emplace(AbilitySlotWidget);
-		}
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid MessageSubsystem"), __FUNCTION__));
+		return;
+	}
+
+	for (const FAbilityData& AbilityData : SlotAbilityDataArr)
+	{
+		MessageSubsystem->BroadcastMessage(GlobalTags::AbilitySlotInitTag, AbilityData);
 	}
 }

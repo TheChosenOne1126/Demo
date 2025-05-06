@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
 #include "GameplayAbilitySpec.h"
+#include "DataAsset/AbilityDataAsset.h"
 #include "Global/MessageStructTypes.h"
-#include "Global/MessageSubsystem.h"
 #include "AbilitySlotWidget.generated.h"
 
 class UCommonButtonBase;
@@ -25,7 +25,7 @@ protected:
 	
 	FGameplayAbilitySpec* GetAbilitySpecByHandle() const;
 
-	void OnAbilityGiven(const FGameplayAbilitySpecHandle& SpecHandle);
+	void OnAbilitySlotInitialized(const FAbilityData& AbilityData);
 
 	void OnAbilityLevelUpdated(const FGameplayAbilitySpecHandle& SpecHandle);
 	
@@ -49,9 +49,6 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCommonButtonBase> AbilityLevelUpdateButton;
-
-	UPROPERTY()
-	FGameplayAbilitySpecHandle AbilitySpecHandle;
 
 	TMap<FGameplayTag, FGuid> MessageHandleMap;
 

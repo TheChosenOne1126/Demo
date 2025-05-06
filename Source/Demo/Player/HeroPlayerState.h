@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "DPlayerState.h"
 #include "GameplayAbilitySpecHandle.h"
+#include "DataAsset/AbilityDataAsset.h"
 #include "HeroPlayerState.generated.h"
 
 class UHeroAttributeViewModel;
@@ -22,13 +23,13 @@ public:
 	virtual void RegisterAttributes() override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerUpdateAbilityLevel(FGameplayAbilitySpecHandle AbilitySpecHandle);
+	void ServerUpdateAbilityLevel(FGameplayTag AbilityTag);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastUpdateAbilityLevel(FGameplayAbilitySpecHandle AbilitySpecHandle);
 
 	UFUNCTION(Client, Reliable)
-	void ClientInitAbilitySystem();
+	void ClientInitAbilitySystem(const TArray<FAbilityData>& SlotAbilityDataArr);
 	
 	UPROPERTY()
 	TObjectPtr<UHeroAttributeViewModel> HeroAttributeViewModel;

@@ -8,6 +8,7 @@
 #include "Ability/DGameplayAbility.h"
 #include "Components/Image.h"
 #include "Global/GlobalTags.h"
+#include "Global/MessageSubsystem.h"
 #include "Global/Statics.h"
 #include "Player/HeroPlayerState.h"
 
@@ -22,8 +23,8 @@ void UAbilitySlotWidget::NativeConstruct()
 		return;
 	}
 	
-	MessageHandleMap.Emplace(GlobalTags::AbilityOnGivenTag) = MessageSubsystem->RegisterMessage(
-		GlobalTags::AbilityOnGivenTag, this, &ThisClass::OnAbilityGiven);
+	MessageHandleMap.Emplace(GlobalTags::AbilitySlotInitTag) = MessageSubsystem->RegisterMessage(
+		GlobalTags::AbilitySlotInitTag, this, &ThisClass::OnAbilitySlotInitialized);
 	MessageHandleMap.Emplace(GlobalTags::AbilityUpdateLevelTag) = MessageSubsystem->RegisterMessage(
 		GlobalTags::AbilityUpdateLevelTag, this, &ThisClass::OnAbilityLevelUpdated);
 	MessageHandleMap.Emplace(GlobalTags::AttributeBaseAbilityPointChangedTag) = MessageSubsystem->RegisterMessage(
@@ -60,72 +61,38 @@ void UAbilitySlotWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-FGameplayAbilitySpec* UAbilitySlotWidget::GetAbilitySpecByHandle() const
+void UAbilitySlotWidget::OnAbilitySlotInitialized(const FAbilityData& AbilityData)
 {
-	if (!AbilitySpecHandle.IsValid())
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpecHandle"), __FUNCTION__));
-		return nullptr;
-	}
-
-	const UAbilitySystemComponent* Asc = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwningPlayerState(), false);
-	if (!IsValid(Asc))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
-		return nullptr;
-	}
-
-	return Asc->FindAbilitySpecFromHandle(AbilitySpecHandle);
-}
-
-void UAbilitySlotWidget::OnAbilityGiven(const FGameplayAbilitySpecHandle& SpecHandle)
-{
-	AbilitySpecHandle = SpecHandle;
-
-	FGameplayAbilitySpec* AbilitySpec = GetAbilitySpecByHandle();
-	if (!AbilitySpec)
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpec"), __FUNCTION__));
-		return;
-	}
-
-	if (!AbilitySpec->GetDynamicSpecSourceTags().HasTagExact(AbilitySlotTag))
+	if (!AbilityData.Tags.HasTagExact(AbilitySlotTag))
 	{
 		return;
 	}
 
-	const UDGameplayAbility* AbilityInstance = Cast<UDGameplayAbility>(AbilitySpec->GetPrimaryInstance());
-	if (!IsValid(AbilityInstance))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityInstance"), __FUNCTION__));
-		return;
-	}
-
-	if (!IsValid(AbilityInstance->AbilityTexture))
+	if (!IsValid(AbilityData.AbilityTexture))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityTexture"), __FUNCTION__));
 		return;
 	}
 
-	AbilityImage->SetBrushFromTexture(AbilityInstance->AbilityTexture);
-	AbilityLevelText->SetCurrentValue(AbilitySpec->Level);
+	AbilityImage->SetBrushFromTexture(AbilityData.AbilityTexture);
+	AbilityLevelText->SetCurrentValue(AbilityData.InitialAbilityLevel);
 }
 
 void UAbilitySlotWidget::OnAbilityLevelUpdated(const FGameplayAbilitySpecHandle& SpecHandle)
 {
-	if (AbilitySpecHandle != SpecHandle)
-	{
-		return;
-	}
-
-	const FGameplayAbilitySpec* AbilitySpec = GetAbilitySpecByHandle();
-	if (!AbilitySpec)
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpec"), __FUNCTION__));
-		return;
-	}
-
-	AbilityLevelText->SetCurrentValue(AbilitySpec->Level);
+	// if (AbilitySpecHandle != SpecHandle)
+	// {
+	// 	return;
+	// }
+	//
+	// const FGameplayAbilitySpec* AbilitySpec = GetAbilitySpecByHandle();
+	// if (!AbilitySpec)
+	// {
+	// 	UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpec"), __FUNCTION__));
+	// 	return;
+	// }
+	//
+	// AbilityLevelText->SetCurrentValue(AbilitySpec->Level);
 }
 
 void UAbilitySlotWidget::OnAbilityLevelUpdateButtonClicked()
@@ -137,7 +104,7 @@ void UAbilitySlotWidget::OnAbilityLevelUpdateButtonClicked()
 		return;
 	}
 
-	PlayerState->ServerUpdateAbilityLevel(AbilitySpecHandle);
+	// PlayerState->ServerUpdateAbilityLevel(AbilitySpecHandle);
 }
 
 void UAbilitySlotWidget::OnAttributeAbilityPointChanged(float AbilityPointValue, const FGameplayAbilitySpec* AbilitySpec)
