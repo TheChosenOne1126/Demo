@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DCommonUserWidget.h"
-#include "DataAsset/AbilityDataAsset.h"
+#include "Interface/AbilitySlotInterface.h"
 #include "HUDWidget.generated.h"
 
 class UAbilitySlotWidget;
@@ -16,7 +16,7 @@ class DEMO_API UHUDWidget : public UDCommonUserWidget
 	GENERATED_BODY()
 
 public:
-	void InitAbilitySlot(const TArray<FAbilityData>& SlotAbilityDataArr);
+	void InitAbilitySlot(const TArray<FAbilitySlotData>& AbilitySlotDataArr);
 
 private:
 	UPROPERTY(meta = (BindWidget))

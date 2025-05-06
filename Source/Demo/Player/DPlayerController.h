@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DataAsset/AbilityDataAsset.h"
 #include "GameFramework/PlayerController.h"
+#include "Interface/AbilitySlotInterface.h"
 #include "DPlayerController.generated.h"
 
 class UHUDWidget;
@@ -17,7 +17,7 @@ class DEMO_API ADPlayerController : public APlayerController
 public:
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 
-	void CreateHUD(const TArray<FAbilityData>& SlotAbilityDataArr);
+	void CreateHUD(const TArray<FAbilitySlotData>& AbilitySlotDataArr);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "HUD", meta = (AllowAbstract = "false"))

@@ -4,9 +4,10 @@
 #include "AbilitySlotWidget.h"
 #include "Components/HorizontalBox.h"
 #include "Global/GlobalTags.h"
+#include "Global/MessageSubsystem.h"
 #include "Global/Statics.h"
 
-void UHUDWidget::InitAbilitySlot(const TArray<FAbilityData>& SlotAbilityDataArr)
+void UHUDWidget::InitAbilitySlot(const TArray<FAbilitySlotData>& AbilitySlotDataArr)
 {
 	if (!IsValid(AbilitySlotBox))
 	{
@@ -21,8 +22,8 @@ void UHUDWidget::InitAbilitySlot(const TArray<FAbilityData>& SlotAbilityDataArr)
 		return;
 	}
 
-	for (const FAbilityData& AbilityData : SlotAbilityDataArr)
+	for (const FAbilitySlotData& AbilitySlotData : AbilitySlotDataArr)
 	{
-		MessageSubsystem->BroadcastMessage(GlobalTags::AbilitySlotInitTag, AbilityData);
+		MessageSubsystem->BroadcastMessage(GlobalTags::AbilitySlotInitTag, AbilitySlotData);
 	}
 }

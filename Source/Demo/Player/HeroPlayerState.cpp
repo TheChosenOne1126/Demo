@@ -1,23 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HeroPlayerState.h"
-
 #include "DPlayerController.h"
 #include "Attribute/HeroAttributeSet.h"
-#include "Blueprint/UserWidget.h"
 #include "Global/GlobalTags.h"
 #include "Global/MessageStructTypes.h"
 #include "Global/MessageSubsystem.h"
 #include "Global/Statics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/HeroAttributeViewModel.h"
-#include "UI/HUDWidget.h"
 
 AHeroPlayerState::AHeroPlayerState()
 {
 	CreateDefaultSubobject<UHeroAttributeSet>(TEXT("HeroAttributeSet"));
-	
-	//HeroAttributeViewModel = CreateDefaultSubobject<UHeroAttributeViewModel>("HeroAttributeViewModel");
 }
 
 void AHeroPlayerState::InitAbilitySystem(ADCharacter* Character)
@@ -54,20 +49,8 @@ void AHeroPlayerState::InitAbilitySystem(ADCharacter* Character)
 	}
 
 	Asc->ApplyModToAttribute(UHeroAttributeSet::GetMaxSpAttribute(), EGameplayModOp::Override, MaxAbilityPoint);
-
-	if (!IsValid(AbilityDataAsset))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityDataAsset"), __FUNCTION__));
-		return;
-	}
-
-	const TArray<FAbilityData> SlotAbilityDataArr = AbilityDataAsset->AbilityDataArr.FilterByPredicate(
-		[](const FAbilityData& AbilityData) -> bool
-		{
-			return AbilityData.Tags.HasTag(GlobalTags::AbilitySlotTag);
-		});
 	
-	ClientInitAbilitySystem(SlotAbilityDataArr);
+	ClientInitAbilitySystem(AbilitySlotDataArr);
 }
 
 void AHeroPlayerState::RegisterAttributes()
@@ -110,7 +93,7 @@ void AHeroPlayerState::ServerUpdateAbilityLevel_Implementation(FGameplayTag Abil
 		return;
 	}
 
-	FGameplayAbilitySpec* AbilitySpec = Asc->FindAbilitySpecFromHandle(AbilityTag);
+	FGameplayAbilitySpec* AbilitySpec = nullptr;// = Asc->FindAbilitySpecFromHandle(AbilityTag);
 	if (!AbilitySpec)
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpec"), __FUNCTION__));
@@ -130,7 +113,7 @@ void AHeroPlayerState::ServerUpdateAbilityLevel_Implementation(FGameplayTag Abil
 
 	Asc->ApplyModToAttribute(UHeroAttributeSet::GetMaxSpAttribute(), EGameplayModOp::AddBase, -1.f);
 
-	NetMulticastUpdateAbilityLevel(AbilityTag);
+	// NetMulticastUpdateAbilityLevel(AbilityTag);
 }
 
 bool AHeroPlayerState::ServerUpdateAbilityLevel_Validate(FGameplayTag AbilityTag)
@@ -199,7 +182,7 @@ void AHeroPlayerState::NetMulticastUpdateAbilityLevel_Implementation(FGameplayAb
 	MessageSubsystem->BroadcastMessage(GlobalTags::AbilityUpdateLevelTag, AbilitySpecHandle);
 }
 
-void AHeroPlayerState::ClientInitAbilitySystem_Implementation(const TArray<FAbilityData>& SlotAbilityDataArr)
+void AHeroPlayerState::ClientInitAbilitySystem_Implementation(const TArray<FAbilitySlotData>& AbilitySlotData)
 {
 	if (!UKismetSystemLibrary::IsStandalone(this))
 	{
@@ -213,7 +196,17 @@ void AHeroPlayerState::ClientInitAbilitySystem_Implementation(const TArray<FAbil
 		return;
 	}
 
-	PlayerController->CreateHUD(SlotAbilityDataArr);
+	PlayerController->CreateHUD(AbilitySlotData);
+}
+
+void AHeroPlayerState::InitAbilitySlotData(FGameplayAbilitySpecHandle AbilitySpecHandle, FAbilityData& AbilityData, FGameplayTagContainer& AbilityTags)
+{
+	AbilitySlotDataArr.Reset();
+	FAbilitySlotData& AbilitySlotData = AbilitySlotDataArr.Emplace_GetRef();
+	AbilitySlotData.AbilitySpecHandle = AbilitySpecHandle;
+	AbilitySlotData.AbilityLevel = AbilityData.InitialAbilityLevel;
+	AbilitySlotData.AbilityTexture = AbilityData.AbilityTexture;
+	AbilitySlotData.SlotTags = AbilityTags.Filter(FGameplayTagContainer(GlobalTags::AbilitySlotTag));
 }
 
 void AHeroPlayerState::OnXpAttributeChange(const FOnAttributeChangeData& XpData)

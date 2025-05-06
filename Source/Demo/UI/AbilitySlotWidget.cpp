@@ -2,10 +2,8 @@
 
 #include "AbilitySlotWidget.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemGlobals.h"
 #include "CommonButtonBase.h"
 #include "CommonNumericTextBlock.h"
-#include "Ability/DGameplayAbility.h"
 #include "Components/Image.h"
 #include "Global/GlobalTags.h"
 #include "Global/MessageSubsystem.h"
@@ -61,21 +59,28 @@ void UAbilitySlotWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UAbilitySlotWidget::OnAbilitySlotInitialized(const FAbilityData& AbilityData)
+FGameplayAbilitySpec* UAbilitySlotWidget::GetAbilitySpecByHandle() const
 {
-	if (!AbilityData.Tags.HasTagExact(AbilitySlotTag))
+	return nullptr;
+}
+
+void UAbilitySlotWidget::OnAbilitySlotInitialized(const FAbilitySlotData& AbilitySlotData)
+{
+	if (!AbilitySlotData.SlotTags.HasTagExact(AbilitySlotTag))
 	{
 		return;
 	}
-
-	if (!IsValid(AbilityData.AbilityTexture))
+	
+	if (!IsValid(AbilitySlotData.AbilityTexture))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityTexture"), __FUNCTION__));
 		return;
 	}
 
-	AbilityImage->SetBrushFromTexture(AbilityData.AbilityTexture);
-	AbilityLevelText->SetCurrentValue(AbilityData.InitialAbilityLevel);
+	AbilitySpecHandle = AbilitySlotData.AbilitySpecHandle;
+
+	AbilityImage->SetBrushFromTexture(AbilitySlotData.AbilityTexture);
+	AbilityLevelText->SetCurrentValue(AbilitySlotData.AbilityLevel);
 }
 
 void UAbilitySlotWidget::OnAbilityLevelUpdated(const FGameplayAbilitySpecHandle& SpecHandle)

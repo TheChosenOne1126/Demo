@@ -9,6 +9,7 @@
 #include "Global/MessageStructTypes.h"
 #include "AbilitySlotWidget.generated.h"
 
+struct FAbilitySlotData;
 class UCommonButtonBase;
 class UCommonNumericTextBlock;
 class UImage;
@@ -25,7 +26,7 @@ protected:
 	
 	FGameplayAbilitySpec* GetAbilitySpecByHandle() const;
 
-	void OnAbilitySlotInitialized(const FAbilityData& AbilityData);
+	void OnAbilitySlotInitialized(const FAbilitySlotData& AbilitySlotData);
 
 	void OnAbilityLevelUpdated(const FGameplayAbilitySpecHandle& SpecHandle);
 	
@@ -49,6 +50,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCommonButtonBase> AbilityLevelUpdateButton;
+
+	UPROPERTY()
+	FGameplayAbilitySpecHandle AbilitySpecHandle;
 
 	TMap<FGameplayTag, FGuid> MessageHandleMap;
 

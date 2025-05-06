@@ -28,7 +28,7 @@ void ADPlayerController::PostProcessInput(const float DeltaTime, const bool bGam
 	Asc->ProcessAbilityInput();
 }
 
-void ADPlayerController::CreateHUD(const TArray<FAbilityData>& SlotAbilityDataArr)
+void ADPlayerController::CreateHUD(const TArray<FAbilitySlotData>& AbilitySlotDataArr)
 {
 	if (IsValid(HUDWidget))
 	{
@@ -42,13 +42,13 @@ void ADPlayerController::CreateHUD(const TArray<FAbilityData>& SlotAbilityDataAr
 
 	FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
 	StreamableManager.RequestAsyncLoad(HUDWidgetClass.ToSoftObjectPath(), FStreamableDelegate::CreateWeakLambda(this,
-		[this, SlotAbilityDataArr]() -> void
+		[this, AbilitySlotDataArr]() -> void
 		{
 			UClass* LoadedClass = HUDWidgetClass.Get();
 			if (IsValid(LoadedClass))
 			{
 				HUDWidget = CreateWidget<UHUDWidget>(this, LoadedClass, TEXT("HUDWidget"));
-				HUDWidget->InitAbilitySlot(SlotAbilityDataArr);
+				HUDWidget->InitAbilitySlot(AbilitySlotDataArr);
 			}
 		}));
 }

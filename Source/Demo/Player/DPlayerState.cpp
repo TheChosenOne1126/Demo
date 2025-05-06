@@ -9,6 +9,7 @@
 #include "Global/DAssetManager.h"
 #include "Global/GlobalTags.h"
 #include "Global/Statics.h"
+#include "Interface/AbilitySlotInterface.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/BaseAttributeViewModel.h"
 
@@ -80,7 +81,7 @@ void ADPlayerState::InitAbilitySystem(ADCharacter* Character)
 			return;
 		}
 		
-		AbilityDataAsset = PawnDataAsset->PawnDataArr[Index].AbilityDataAsset;
+		UAbilityDataAsset* AbilityDataAsset = PawnDataAsset->PawnDataArr[Index].AbilityDataAsset;
 		if (!IsValid(AbilityDataAsset))
 		{
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityDataAsset"), __FUNCTION__));
@@ -109,7 +110,12 @@ void ADPlayerState::InitAbilitySystem(ADCharacter* Character)
 			AbilitySpec.GetDynamicSpecSourceTags().AppendTags(AbilityData.Tags);
 
 			AbilitySpec.SetByCallerTagMagnitudes.Emplace(GlobalTags::SetByCallerAbilityMaxLevelTag, AbilityData.MaxAbilityLevel);
-			Asc->GiveAbility(AbilitySpec);
+			const FGameplayAbilitySpecHandle AbilitySpecHandle = Asc->GiveAbility(AbilitySpec);
+
+			if (IAbilitySlotInterface* AbilitySlotInterface = Cast<IAbilitySlotInterface>(this))
+			{
+				AbilitySlotInterface->InitAbilitySlotData(AbilitySpecHandle, AbilityData, AbilitySpec.GetDynamicSpecSourceTags());
+			}
 		}
 
 		RegisterAttributes();
