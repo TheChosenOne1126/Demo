@@ -2,14 +2,14 @@
 
 #pragma once
 
+#include <Interface/AbilitySlotInterface.h>
+
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
 #include "GameplayAbilitySpec.h"
-#include "DataAsset/AbilityDataAsset.h"
 #include "Global/MessageStructTypes.h"
 #include "AbilitySlotWidget.generated.h"
 
-struct FAbilitySlotData;
 class UCommonButtonBase;
 class UCommonNumericTextBlock;
 class UImage;
@@ -28,7 +28,7 @@ protected:
 
 	void OnAbilitySlotInitialized(const FAbilitySlotData& AbilitySlotData);
 
-	void OnAbilityLevelUpdated(const FGameplayAbilitySpecHandle& SpecHandle);
+	void OnAbilityLevelUpdated(const FGameplayAbilitySpec& AbilitySpec);
 	
 	void OnAttributeBaseSpChanged(const FMessageFloatStructType& MessageStruct);
 	

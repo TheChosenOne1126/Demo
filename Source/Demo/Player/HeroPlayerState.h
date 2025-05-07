@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DPlayerState.h"
-#include "GameplayAbilitySpecHandle.h"
+#include "GameplayAbilitySpec.h"
 #include "DataAsset/AbilityDataAsset.h"
 #include "Interface/AbilitySlotInterface.h"
 #include "HeroPlayerState.generated.h"
@@ -24,10 +24,10 @@ public:
 	virtual void RegisterAttributes() override;
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerUpdateAbilityLevel(FGameplayTag AbilityTag);
+	void ServerUpdateAbilityLevel(const FGameplayAbilitySpecHandle AbilitySpecHandle);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void NetMulticastUpdateAbilityLevel(FGameplayAbilitySpecHandle AbilitySpecHandle);
+	void NetMulticastUpdateAbilityLevel(const FGameplayAbilitySpec& AbilitySpec);
 
 	UFUNCTION(Client, Reliable)
 	void ClientInitAbilitySystem(const TArray<FAbilitySlotData>& AbilitySlotData);

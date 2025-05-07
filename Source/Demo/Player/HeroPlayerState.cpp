@@ -79,9 +79,9 @@ void AHeroPlayerState::RegisterAttributes()
 	Asc->RegisterAttributeValueChange(UHeroAttributeSet::GetUltimateSpAttribute(), this, &ThisClass::OnSpAttributeChange, true);
 }
 
-void AHeroPlayerState::ServerUpdateAbilityLevel_Implementation(FGameplayTag AbilityTag)
+void AHeroPlayerState::ServerUpdateAbilityLevel_Implementation(const FGameplayAbilitySpecHandle AbilitySpecHandle)
 {
-	if (!AbilityTag.IsValid())
+	if (!AbilitySpecHandle.IsValid())
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityTag"), __FUNCTION__));
 		return;
@@ -93,7 +93,7 @@ void AHeroPlayerState::ServerUpdateAbilityLevel_Implementation(FGameplayTag Abil
 		return;
 	}
 
-	FGameplayAbilitySpec* AbilitySpec = nullptr;// = Asc->FindAbilitySpecFromHandle(AbilityTag);
+	FGameplayAbilitySpec* AbilitySpec = Asc->FindAbilitySpecFromHandle(AbilitySpecHandle);
 	if (!AbilitySpec)
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpec"), __FUNCTION__));
@@ -113,60 +113,59 @@ void AHeroPlayerState::ServerUpdateAbilityLevel_Implementation(FGameplayTag Abil
 
 	Asc->ApplyModToAttribute(UHeroAttributeSet::GetMaxSpAttribute(), EGameplayModOp::AddBase, -1.f);
 
-	// NetMulticastUpdateAbilityLevel(AbilityTag);
+	NetMulticastUpdateAbilityLevel(*AbilitySpec);
 }
 
-bool AHeroPlayerState::ServerUpdateAbilityLevel_Validate(FGameplayTag AbilityTag)
-{
-	// if (!AbilitySpecHandle.IsValid())
-	// {
-	// 	UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpecHandle"), __FUNCTION__));
-	// 	return false;
-	// }
-	//
-	// if (!IsValid(Asc))
-	// {
-	// 	UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Asc"), __FUNCTION__));
-	// 	return false;
-	// }
-	//
-	// FGameplayAbilitySpec* AbilitySpec = Asc->FindAbilitySpecFromHandle(AbilitySpecHandle);
-	// if (!AbilitySpec)
-	// {
-	// 	UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpec"), __FUNCTION__));
-	// 	return false;;
-	// }
-	//
-	// const UHeroAttributeSet* HeroAttributeSet = Asc->GetSet<UHeroAttributeSet>();
-	// if (!IsValid(HeroAttributeSet))
-	// {
-	// 	UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid HeroAttributeSet"), __FUNCTION__));
-	// 	return false;
-	// }
-	//
-	// const float* AbilityMaxLevelPtr = AbilitySpec->SetByCallerTagMagnitudes.Find(GlobalTags::SetByCallerAbilityMaxLevelTag);
-	// if (!AbilityMaxLevelPtr)
-	// {
-	// 	return false;
-	// }
-	//
-	// if (AbilitySpec->Level < *AbilityMaxLevelPtr)
-	// {
-	// 	if (AbilitySpec->GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityUltimateTag))
-	// 	{
-	// 		return HeroAttributeSet->GetUltimateSp() > 0.f;
-	// 	}
-	//
-	// 	return HeroAttributeSet->GetBaseSp() > 0.f;
-	// }
-	//
-	// return false;
-	return true;
-}
-
-void AHeroPlayerState::NetMulticastUpdateAbilityLevel_Implementation(FGameplayAbilitySpecHandle AbilitySpecHandle)
+bool AHeroPlayerState::ServerUpdateAbilityLevel_Validate(const FGameplayAbilitySpecHandle AbilitySpecHandle)
 {
 	if (!AbilitySpecHandle.IsValid())
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpecHandle"), __FUNCTION__));
+		return false;
+	}
+	
+	if (!IsValid(Asc))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Asc"), __FUNCTION__));
+		return false;
+	}
+	
+	FGameplayAbilitySpec* AbilitySpec = Asc->FindAbilitySpecFromHandle(AbilitySpecHandle);
+	if (!AbilitySpec)
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpec"), __FUNCTION__));
+		return false;;
+	}
+	
+	const UHeroAttributeSet* HeroAttributeSet = Asc->GetSet<UHeroAttributeSet>();
+	if (!IsValid(HeroAttributeSet))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid HeroAttributeSet"), __FUNCTION__));
+		return false;
+	}
+	
+	const float* AbilityMaxLevelPtr = AbilitySpec->SetByCallerTagMagnitudes.Find(GlobalTags::SetByCallerAbilityMaxLevelTag);
+	if (!AbilityMaxLevelPtr)
+	{
+		return false;
+	}
+	
+	if (AbilitySpec->Level < *AbilityMaxLevelPtr)
+	{
+		if (AbilitySpec->GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityUltimateTag))
+		{
+			return HeroAttributeSet->GetUltimateSp() > 0.f;
+		}
+	
+		return HeroAttributeSet->GetBaseSp() > 0.f;
+	}
+	
+	return false;
+}
+
+void AHeroPlayerState::NetMulticastUpdateAbilityLevel_Implementation(const FGameplayAbilitySpec& AbilitySpec)
+{
+	if (!AbilitySpec.Handle.IsValid())
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpecHandle"), __FUNCTION__));
 		return;
@@ -179,7 +178,7 @@ void AHeroPlayerState::NetMulticastUpdateAbilityLevel_Implementation(FGameplayAb
 		return;
 	}
 
-	MessageSubsystem->BroadcastMessage(GlobalTags::AbilityUpdateLevelTag, AbilitySpecHandle);
+	MessageSubsystem->BroadcastMessage(GlobalTags::AbilityUpdateLevelTag, AbilitySpec);
 }
 
 void AHeroPlayerState::ClientInitAbilitySystem_Implementation(const TArray<FAbilitySlotData>& AbilitySlotData)

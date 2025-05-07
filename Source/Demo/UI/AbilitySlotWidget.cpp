@@ -61,7 +61,21 @@ void UAbilitySlotWidget::NativeDestruct()
 
 FGameplayAbilitySpec* UAbilitySlotWidget::GetAbilitySpecByHandle() const
 {
-	return nullptr;
+	const AHeroPlayerState* PlayerState = GetOwningPlayerState<AHeroPlayerState>();
+	if (!IsValid(PlayerState))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid PlayerState"), __FUNCTION__));
+		return nullptr;
+	}
+
+	const UAbilitySystemComponent* Asc = PlayerState->GetAbilitySystemComponent();
+	if (!IsValid(Asc))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
+		return nullptr;
+	}
+
+	return Asc->FindAbilitySpecFromHandle(AbilitySpecHandle);
 }
 
 void UAbilitySlotWidget::OnAbilitySlotInitialized(const FAbilitySlotData& AbilitySlotData)
@@ -83,21 +97,14 @@ void UAbilitySlotWidget::OnAbilitySlotInitialized(const FAbilitySlotData& Abilit
 	AbilityLevelText->SetCurrentValue(AbilitySlotData.AbilityLevel);
 }
 
-void UAbilitySlotWidget::OnAbilityLevelUpdated(const FGameplayAbilitySpecHandle& SpecHandle)
+void UAbilitySlotWidget::OnAbilityLevelUpdated(const FGameplayAbilitySpec& AbilitySpec)
 {
-	// if (AbilitySpecHandle != SpecHandle)
-	// {
-	// 	return;
-	// }
-	//
-	// const FGameplayAbilitySpec* AbilitySpec = GetAbilitySpecByHandle();
-	// if (!AbilitySpec)
-	// {
-	// 	UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySpec"), __FUNCTION__));
-	// 	return;
-	// }
-	//
-	// AbilityLevelText->SetCurrentValue(AbilitySpec->Level);
+	if (AbilitySpecHandle != AbilitySpec.Handle)
+	{
+		return;
+	}
+	
+	AbilityLevelText->SetCurrentValue(AbilitySpec.Level);
 }
 
 void UAbilitySlotWidget::OnAbilityLevelUpdateButtonClicked()
@@ -109,7 +116,7 @@ void UAbilitySlotWidget::OnAbilityLevelUpdateButtonClicked()
 		return;
 	}
 
-	// PlayerState->ServerUpdateAbilityLevel(AbilitySpecHandle);
+	PlayerState->ServerUpdateAbilityLevel(AbilitySpecHandle);
 }
 
 void UAbilitySlotWidget::OnAttributeAbilityPointChanged(float AbilityPointValue, const FGameplayAbilitySpec* AbilitySpec)
