@@ -5,8 +5,6 @@
 #include "Engine/OverlapResult.h"
 #include "Global/Statics.h"
 
-FName UDAbilityTask_SweepTrace::SweepTraceTaskInstanceName = FName(TEXT("SweepTraceTask"));
-
 UDAbilityTask_SweepTrace::UDAbilityTask_SweepTrace()
 {
 	bTickingTask = true;
@@ -14,13 +12,18 @@ UDAbilityTask_SweepTrace::UDAbilityTask_SweepTrace()
 
 UDAbilityTask_SweepTrace* UDAbilityTask_SweepTrace::CreateSweepTrace(UGameplayAbility* OwningAbility)
 {
-	ThisClass* AbilityTask = NewAbilityTask<ThisClass>(OwningAbility, SweepTraceTaskInstanceName);
+	ThisClass* AbilityTask = NewAbilityTask<ThisClass>(OwningAbility);
 	return AbilityTask;
 }
 
 void UDAbilityTask_SweepTrace::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
+
+	if (!bCanTrace)
+	{
+		return;
+	}
 
 	const UWorld* World = GetWorld();
 	if (!IsValid(World))
@@ -32,8 +35,6 @@ void UDAbilityTask_SweepTrace::TickTask(float DeltaTime)
 	const FVector Start = LastLocation;
 	const FVector End = SweptComponent->GetComponentLocation();
 	const FQuat Rot = SweptComponent->GetComponentQuat();
-	QueryParams.IgnoreMask = SweptComponent->GetMoveIgnoreMask();
-	QueryParams.bTraceComplex = SweptComponent->bTraceComplexOnMove;
 	TArray<FHitResult> HitResults;
 	if (!World->ComponentSweepMulti(HitResults, SweptComponent.Get(), Start, End, Rot, QueryParams))
 	{
@@ -65,6 +66,56 @@ void UDAbilityTask_SweepTrace::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
+void UDAbilityTask_SweepTrace::StartLogic()
+{
+	if (!SweptComponent.IsValid())
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid NewSweptComponent"), __FUNCTION__));
+		return;
+	}
+
+	SweepResults.Reset();
+
+	LastLocation = SweptComponent->GetComponentLocation();
+
+	const UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid World"), __FUNCTION__));
+		return;
+	}
+
+	TArray<FOverlapResult> Overlaps;
+	const FQuat Rotation = SweptComponent->GetComponentQuat();
+	if (World->ComponentOverlapMulti(Overlaps, SweptComponent.Get(), LastLocation, Rotation, QueryParams))
+	{
+		TArray<FHitResult> HitResults;
+		for (const FOverlapResult& OverlapResult : Overlaps)
+		{
+			FHitResult& SweepResult = HitResults.Emplace_GetRef();
+			SweepResult.Component = OverlapResult.GetComponent();
+			SweepResult.HitObjectHandle = OverlapResult.OverlapObjectHandle;
+			SweepResult.bBlockingHit = true;
+			SweepResult.Location = LastLocation;
+			SweepResult.ImpactPoint = OverlapResult.Component.IsValid() ? OverlapResult.Component->GetComponentLocation() : LastLocation;
+			SweepResult.TraceStart = LastLocation;
+			SweepResult.TraceEnd = SweepResult.ImpactPoint;
+		}
+
+		if (!HitResults.IsEmpty())
+		{
+			TriggerOnSwept(HitResults);
+		}
+	}
+
+	bCanTrace = true;
+}
+
+void UDAbilityTask_SweepTrace::StopLogic()
+{
+	bCanTrace = false;
+}
+
 void UDAbilityTask_SweepTrace::Activate()
 {
 	Super::Activate();
@@ -92,47 +143,11 @@ void UDAbilityTask_SweepTrace::Activate()
 		});
 
 	SweptComponent = UStatics::FindSweptComponent(GetAvatarActor());
-	if (!SweptComponent.IsValid())
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid NewSweptComponent"), __FUNCTION__));
-		return;
-	}
-
-	SweepResults.Reset();
-
-	LastLocation = SweptComponent->GetComponentLocation();
-
-	const UWorld* World = GetWorld();
-	if (!IsValid(World))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid World"), __FUNCTION__));
-		return;
-	}
-
-	TArray<FOverlapResult> Overlaps;
-	const FQuat Rotation = SweptComponent->GetComponentQuat();
-	QueryParams.TraceTag = SCENE_QUERY_STAT(SweepComponent);
+	
 	QueryParams.IgnoreMask = SweptComponent->GetMoveIgnoreMask();
-	if (World->ComponentOverlapMulti(Overlaps, SweptComponent.Get(), LastLocation, Rotation, QueryParams))
-	{
-		TArray<FHitResult> HitResults;
-		for (const FOverlapResult& OverlapResult : Overlaps)
-		{
-			FHitResult& SweepResult = HitResults.Emplace_GetRef();
-			SweepResult.Component = OverlapResult.GetComponent();
-			SweepResult.HitObjectHandle = OverlapResult.OverlapObjectHandle;
-			SweepResult.bBlockingHit = true;
-			SweepResult.Location = LastLocation;
-			SweepResult.ImpactPoint = OverlapResult.Component.IsValid() ? OverlapResult.Component->GetComponentLocation() : LastLocation;
-			SweepResult.TraceStart = LastLocation;
-			SweepResult.TraceEnd = SweepResult.ImpactPoint;
-		}
+	QueryParams.bTraceComplex = SweptComponent->bTraceComplexOnMove;
 
-		if (!HitResults.IsEmpty())
-		{
-			TriggerOnSwept(HitResults);
-		}
-	}
+	bCanTrace = false;
 }
 
 void UDAbilityTask_SweepTrace::TriggerOnSwept(TArray<FHitResult>& HitResults) const

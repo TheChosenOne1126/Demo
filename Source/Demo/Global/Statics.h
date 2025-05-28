@@ -24,24 +24,6 @@ enum class ELogType : uint8
 	Fatal
 };
 
-USTRUCT(BlueprintType)
-struct FDamageData
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(BlueprintReadWrite)
-	float FixedValue = 0.f;
-
-	UPROPERTY(BlueprintReadWrite)
-	float PerHpAttributeValue = 0.f;
-
-	UPROPERTY(BlueprintReadWrite)
-	float PerDamageAttributeValue = 0.f;
-
-	UPROPERTY(BlueprintReadWrite)
-	float PerExtraDamageAttributeValue = 0.f;
-};
-
 UCLASS()
 class DEMO_API UStatics : public UBlueprintFunctionLibrary
 {
@@ -62,17 +44,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ability", meta = (DefaultToSelf = "Ability"))
 	static void DestroyAbilityAvatar(const UDGameplayAbility* Ability);
-
-	UFUNCTION(BlueprintCallable, Category = "Ability", meta = (DefaultToSelf = "Ability"))
-	static void MakeDamageGameplayEffectSpec(
-		const UDGameplayAbility* Ability,
-		TSubclassOf<UGameplayEffect> DamageEffect,
-		FGameplayTagContainer GrantTags,
-		FDamageData DamageData,
-		FGameplayEffectSpecHandle& DamageEffectSpecHandle);
-
-	UFUNCTION(BlueprintCallable, Category = "Ability", meta = (DefaultToSelf = "Ability"))
-	static void TriggerOnHit(const UDGameplayAbility* Ability, FGameplayAbilityTargetDataHandle TargetData);
 	
 	static UPrimitiveComponent* FindSweptComponent(AActor* Owner);
 };

@@ -204,66 +204,6 @@ void UStatics::DestroyAbilityAvatar(const UDGameplayAbility* Ability)
 	AvatarActor->Destroy();
 }
 
-void UStatics::MakeDamageGameplayEffectSpec(
-	const UDGameplayAbility* Ability,
-	TSubclassOf<UGameplayEffect> DamageEffect,
-	FGameplayTagContainer GrantTags,
-	FDamageData DamageData,
-	FGameplayEffectSpecHandle& DamageEffectSpecHandle)
-{
-	if (!IsValid(Ability))
-	{
-		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
-		return;
-	}
-
-	DamageEffectSpecHandle = Ability->MakeOutgoingGameplayEffectSpec(DamageEffect, Ability->GetAbilityLevel());
-	if (!DamageEffectSpecHandle.IsValid())
-	{
-		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: invalid DamageEffectSpecHandle"), __FUNCTION__));
-		return;
-	}
-
-	DamageEffectSpecHandle.Data->SetSetByCallerMagnitude(GlobalTags::SetByCallerFixedDamageTag, DamageData.FixedValue);
-	DamageEffectSpecHandle.Data->SetSetByCallerMagnitude(GlobalTags::SetByCallerPerHpDamageTag, DamageData.PerHpAttributeValue);
-	DamageEffectSpecHandle.Data->SetSetByCallerMagnitude(GlobalTags::SetByCallerPerDamageAttributeTag, DamageData.PerDamageAttributeValue);
-	DamageEffectSpecHandle.Data->SetSetByCallerMagnitude(GlobalTags::SetByCallerPerExtraDamageAttributeTag, DamageData.PerExtraDamageAttributeValue);
-	DamageEffectSpecHandle.Data->DynamicGrantedTags.AppendTags(GrantTags);
-}
-
-void UStatics::TriggerOnHit(const UDGameplayAbility* Ability, FGameplayAbilityTargetDataHandle TargetData)
-{
-	if (!IsValid(Ability))
-	{
-		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
-		return;
-	}
-
-	for (TSharedPtr Data : TargetData.Data)
-	{
-		if (!Data.IsValid())
-		{
-			Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: invalid TargetData"), __FUNCTION__));
-			continue;
-		}
-		
-		for (TWeakObjectPtr Actor : Data->GetActors())
-		{
-			UDAbilitySystemComponent* Asc = GetDAbilitySystemComponent(Actor.Get());
-			if (!IsValid(Asc))
-			{
-				Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: [Actor: %s] invalid UDAbilitySystemComponent"),
-					__FUNCTION__, *AActor::GetDebugName(Actor.Get())));
-				continue;
-			}
-
-			FGameplayEventData EventData;
-			EventData.Instigator = Ability->GetAvatarActorFromActorInfo();
-			Asc->HandleGameplayEvent(GlobalTags::EventOnHitTag, &EventData);
-		}
-	}
-}
-
 UPrimitiveComponent* UStatics::FindSweptComponent(AActor* Owner)
 {
 	if (!IsValid(Owner))

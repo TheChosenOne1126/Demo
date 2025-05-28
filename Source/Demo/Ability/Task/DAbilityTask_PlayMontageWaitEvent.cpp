@@ -7,7 +7,6 @@
 
 UDAbilityTask_PlayMontageWaitEvent* UDAbilityTask_PlayMontageWaitEvent::CreatePlayMontageAndWaitEvent(
 	UGameplayAbility* OwningAbility,
-	const FName TaskInstanceName,
 	FGameplayTagContainer EventTags,
 	UAnimMontage* MontageToPlay,
 	const float Rate,
@@ -17,7 +16,7 @@ UDAbilityTask_PlayMontageWaitEvent* UDAbilityTask_PlayMontageWaitEvent::CreatePl
 	const float StartTimeSeconds,
 	const bool bAllowInterruptAfterBlendOut)
 {
-	ThisClass* AbilityTask = NewAbilityTask<ThisClass>(OwningAbility, TaskInstanceName);
+	ThisClass* AbilityTask = NewAbilityTask<ThisClass>(OwningAbility);
 	AbilityTask->EventTags = EventTags;
 	AbilityTask->MontageToPlay = MontageToPlay;
 	AbilityTask->Rate = Rate;

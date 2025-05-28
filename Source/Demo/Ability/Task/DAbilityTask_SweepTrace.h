@@ -10,20 +10,6 @@ class ISweepInterface;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FServerSyncTargetDataBySweepDelegate, const FGameplayAbilityTargetDataHandle&, Data);
 
-USTRUCT()
-struct FSweptInfo
-{
-	GENERATED_BODY()
-
-	TWeakObjectPtr<UPrimitiveComponent> SweptComponent;
-
-	UPROPERTY()
-	TArray<FHitResult> SweepResults;
-	
-	UPROPERTY()
-	FVector LastLocation = FVector::ZeroVector;
-};
-
 UCLASS()
 class DEMO_API UDAbilityTask_SweepTrace : public UAbilityTask
 {
@@ -40,7 +26,11 @@ public:
 
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
-	static FName SweepTraceTaskInstanceName;
+	UFUNCTION(BlueprintCallable)
+	void StartLogic();
+
+	UFUNCTION(BlueprintCallable)
+	void StopLogic();
 
 protected:
 	virtual void Activate() override;
@@ -59,6 +49,9 @@ private:
 	
 	UPROPERTY()
 	FVector LastLocation = FVector::ZeroVector;
+
+	UPROPERTY()
+	uint8 bCanTrace : 1;
 
 	FComponentQueryParams QueryParams;
 

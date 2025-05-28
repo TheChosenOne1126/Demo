@@ -19,7 +19,6 @@ public:
 		HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = true))
 	static UDAbilityTask_PlayMontageWaitEvent* CreatePlayMontageAndWaitEvent(
 		UGameplayAbility* OwningAbility,
-		FName TaskInstanceName,
 		FGameplayTagContainer EventTags,
 		UAnimMontage* MontageToPlay,
 		float Rate = 1.f,
