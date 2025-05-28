@@ -40,28 +40,25 @@ public:
 
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
-	UFUNCTION(BlueprintCallable)
-	void StartSweep();
-
-	UFUNCTION(BlueprintCallable)
-	void StopSweep();
-
 	static FName SweepTraceTaskInstanceName;
 
 protected:
 	virtual void Activate() override;
 
-	void TriggerOnSwept(UPrimitiveComponent* SweepComponent, TArray<FHitResult>& SweepResults);
+	void TriggerOnSwept(TArray<FHitResult>& HitResults) const;
 
 	UPROPERTY(BlueprintAssignable)
 	FServerSyncTargetDataBySweepDelegate ValidData;
 	
 private:
 	UPROPERTY()
-	uint8 bTickEnabled : 1 = false;
+	TWeakObjectPtr<UPrimitiveComponent> SweptComponent;
 
-	UPROPERTY(Transient)
-	TArray<FSweptInfo> SweepInfos;
+	UPROPERTY()
+	TArray<FHitResult> SweepResults;
+	
+	UPROPERTY()
+	FVector LastLocation = FVector::ZeroVector;
 
 	FComponentQueryParams QueryParams;
 

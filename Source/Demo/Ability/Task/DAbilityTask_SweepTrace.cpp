@@ -22,54 +22,34 @@ void UDAbilityTask_SweepTrace::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
 
-	if (!bTickEnabled)
-	{
-		return;
-	}
-
 	const UWorld* World = GetWorld();
 	if (!IsValid(World))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid World"), __FUNCTION__));
-		bTickEnabled = false;
 		return;
 	}
 	
-	for	(FSweptInfo& SweptInfo : SweepInfos)
+	const FVector Start = LastLocation;
+	const FVector End = SweptComponent->GetComponentLocation();
+	const FQuat Rot = SweptComponent->GetComponentQuat();
+	QueryParams.IgnoreMask = SweptComponent->GetMoveIgnoreMask();
+	QueryParams.bTraceComplex = SweptComponent->bTraceComplexOnMove;
+	TArray<FHitResult> HitResults;
+	if (!World->ComponentSweepMulti(HitResults, SweptComponent.Get(), Start, End, Rot, QueryParams))
 	{
-		if (!SweptInfo.SweptComponent.IsValid())
-		{
-			continue;
-		}
-
-		const FVector Start = SweptInfo.LastLocation;
-		const FVector End = SweptInfo.SweptComponent->GetComponentLocation();
-		const FQuat Rot = SweptInfo.SweptComponent->GetComponentQuat();
-		QueryParams.IgnoreMask = SweptInfo.SweptComponent->GetMoveIgnoreMask();
-		QueryParams.bTraceComplex = SweptInfo.SweptComponent->bTraceComplexOnMove;
-		TArray<FHitResult> SweepResults;
-		if (!World->ComponentSweepMulti(SweepResults, SweptInfo.SweptComponent.Get(), Start, End, Rot, QueryParams))
-		{
-			continue;
-		}
-
-		if (!SweepResults.IsEmpty())
-		{
-			TriggerOnSwept(SweptInfo.SweptComponent.Get(), SweepResults);
-		}
-
-		SweptInfo.LastLocation = End;
+		return;
 	}
 
-	SweepInfos.RemoveAllSwap(
-		[](const FSweptInfo& SweptInfo) -> bool
-		{
-			return !SweptInfo.SweptComponent.IsValid();
-		});
-
-	if (SweepInfos.IsEmpty())
+	if (!HitResults.IsEmpty())
 	{
-		bTickEnabled = false;
+		TriggerOnSwept(HitResults);
+	}
+
+	LastLocation = End;
+
+	if (!SweptComponent.IsValid())
+	{
+		EndTask();
 	}
 }
 
@@ -80,83 +60,9 @@ void UDAbilityTask_SweepTrace::OnDestroy(bool bInOwnerFinished)
 		AbilitySystemComponent->AbilityTargetDataSetDelegate(GetAbilitySpecHandle(), GetActivationPredictionKey()).Remove(DelegateHandle);
 	}
 
+	SweepResults.Reset();
+
 	Super::OnDestroy(bInOwnerFinished);
-}
-
-void UDAbilityTask_SweepTrace::StartSweep()
-{
-	UPrimitiveComponent* SweptComponent = UStatics::FindSweptComponent(GetAvatarActor());
-	if (!IsValid(SweptComponent))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid NewSweptComponent"), __FUNCTION__));
-		return;
-	}
-
-	SweepInfos.RemoveAllSwap(
-		[SweptComponent](const FSweptInfo& SweptInfo) -> bool
-		{
-			return SweptInfo.SweptComponent == SweptComponent;
-		});
-
-	FSweptInfo& NewSweptInfo = SweepInfos.Emplace_GetRef();
-	NewSweptInfo.SweptComponent = SweptComponent;
-	NewSweptInfo.LastLocation = SweptComponent->GetComponentLocation();
-	NewSweptInfo.SweepResults.Reset();
-
-	const UWorld* World = GetWorld();
-	if (!IsValid(World))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid World"), __FUNCTION__));
-		return;
-	}
-
-	TArray<FOverlapResult> Overlaps;
-	const FQuat Rotation = SweptComponent->GetComponentQuat();
-	QueryParams.TraceTag = SCENE_QUERY_STAT(SweepComponent);
-	QueryParams.IgnoreMask = SweptComponent->GetMoveIgnoreMask();
-	if (World->ComponentOverlapMulti(Overlaps, SweptComponent, NewSweptInfo.LastLocation, Rotation, QueryParams))
-	{
-		TArray<FHitResult> SweepResults;
-		for (const FOverlapResult& OverlapResult : Overlaps)
-		{
-			FHitResult& SweepResult = SweepResults.Emplace_GetRef();
-			SweepResult.Component = OverlapResult.GetComponent();
-			SweepResult.HitObjectHandle = OverlapResult.OverlapObjectHandle;
-			SweepResult.bBlockingHit = true;
-			SweepResult.Location = NewSweptInfo.LastLocation;
-			SweepResult.ImpactPoint = OverlapResult.Component.IsValid() ? OverlapResult.Component->GetComponentLocation() : NewSweptInfo.LastLocation;
-			SweepResult.TraceStart = NewSweptInfo.LastLocation;
-			SweepResult.TraceEnd = SweepResult.ImpactPoint;
-		}
-
-		if (!SweepResults.IsEmpty())
-		{
-			TriggerOnSwept(SweptComponent, SweepResults);
-		}
-	}
-
-	bTickEnabled = true;
-}
-
-void UDAbilityTask_SweepTrace::StopSweep()
-{
-	UPrimitiveComponent* SweptComponent = UStatics::FindSweptComponent(GetAvatarActor());
-	if (!IsValid(SweptComponent))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid NewSweptComponent"), __FUNCTION__));
-		return;
-	}
-
-	SweepInfos.RemoveAllSwap(
-		[SweptComponent](const FSweptInfo& SweptInfo) -> bool
-		{
-			return SweptInfo.SweptComponent == SweptComponent;
-		});
-
-	if (SweepInfos.IsEmpty())
-	{
-		bTickEnabled = false;
-	}
 }
 
 void UDAbilityTask_SweepTrace::Activate()
@@ -167,8 +73,6 @@ void UDAbilityTask_SweepTrace::Activate()
 	{
 		QueryParams.AddIgnoredActor(Avatar);
 	}
-
-	bTickEnabled = false;
 
 	if (!Ability || !Ability->GetCurrentActorInfo() || !Ability->GetCurrentActorInfo()->IsNetAuthority())
 	{
@@ -186,9 +90,52 @@ void UDAbilityTask_SweepTrace::Activate()
 				ValidData.Broadcast(MutableData);
 			}
 		});
+
+	SweptComponent = UStatics::FindSweptComponent(GetAvatarActor());
+	if (!SweptComponent.IsValid())
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid NewSweptComponent"), __FUNCTION__));
+		return;
+	}
+
+	SweepResults.Reset();
+
+	LastLocation = SweptComponent->GetComponentLocation();
+
+	const UWorld* World = GetWorld();
+	if (!IsValid(World))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid World"), __FUNCTION__));
+		return;
+	}
+
+	TArray<FOverlapResult> Overlaps;
+	const FQuat Rotation = SweptComponent->GetComponentQuat();
+	QueryParams.TraceTag = SCENE_QUERY_STAT(SweepComponent);
+	QueryParams.IgnoreMask = SweptComponent->GetMoveIgnoreMask();
+	if (World->ComponentOverlapMulti(Overlaps, SweptComponent.Get(), LastLocation, Rotation, QueryParams))
+	{
+		TArray<FHitResult> HitResults;
+		for (const FOverlapResult& OverlapResult : Overlaps)
+		{
+			FHitResult& SweepResult = HitResults.Emplace_GetRef();
+			SweepResult.Component = OverlapResult.GetComponent();
+			SweepResult.HitObjectHandle = OverlapResult.OverlapObjectHandle;
+			SweepResult.bBlockingHit = true;
+			SweepResult.Location = LastLocation;
+			SweepResult.ImpactPoint = OverlapResult.Component.IsValid() ? OverlapResult.Component->GetComponentLocation() : LastLocation;
+			SweepResult.TraceStart = LastLocation;
+			SweepResult.TraceEnd = SweepResult.ImpactPoint;
+		}
+
+		if (!HitResults.IsEmpty())
+		{
+			TriggerOnSwept(HitResults);
+		}
+	}
 }
 
-void UDAbilityTask_SweepTrace::TriggerOnSwept(UPrimitiveComponent* SweepComponent, TArray<FHitResult>& SweepResults)
+void UDAbilityTask_SweepTrace::TriggerOnSwept(TArray<FHitResult>& HitResults) const
 {
 	if (!IsValid(Ability))
 	{
@@ -196,20 +143,8 @@ void UDAbilityTask_SweepTrace::TriggerOnSwept(UPrimitiveComponent* SweepComponen
 		return;
 	}
 	
-	if (!IsValid(SweepComponent) || !SweepComponent->IsCollisionEnabled())
+	if (!SweptComponent.IsValid() || !SweptComponent->IsCollisionEnabled())
 	{
-		return;
-	}
-
-	const int32 Index = SweepInfos.IndexOfByPredicate(
-		[SweepComponent](const FSweptInfo& SweptInfo) -> bool
-		{
-			return SweptInfo.SweptComponent == SweepComponent;
-		});
-
-	if (Index == INDEX_NONE)
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in SweepInfos"), __FUNCTION__));
 		return;
 	}
 
@@ -220,19 +155,19 @@ void UDAbilityTask_SweepTrace::TriggerOnSwept(UPrimitiveComponent* SweepComponen
 	}
 
 	FGameplayAbilityTargetDataHandle TargetDataHandle;
-	for (const FHitResult& SweepResult : SweepResults)
+	for (const FHitResult& HitResult : HitResults)
 	{
-		if (SweepInfos[Index].SweepResults.ContainsByPredicate(
-			[SweepResult](const FHitResult& InSweepResult) -> bool
+		if (HitResults.ContainsByPredicate(
+			[HitResult](const FHitResult& InSweepResult) -> bool
 			{
-				return SweepResult.GetActor() == InSweepResult.GetActor();
+				return HitResult.GetActor() == InSweepResult.GetActor();
 			}))
 		{
 			continue;
 		}
 
-		SweepInfos[Index].SweepResults.Emplace(SweepResult);
-		TargetDataHandle.Add(new FGameplayAbilityTargetData_SingleTargetHit(SweepResult));
+		HitResults.Emplace(HitResult);
+		TargetDataHandle.Add(new FGameplayAbilityTargetData_SingleTargetHit(HitResult));
 	}
 
 	if (IsPredictingClient())
