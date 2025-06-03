@@ -51,7 +51,7 @@ private:
 	FVector LastLocation = FVector::ZeroVector;
 
 	UPROPERTY()
-	uint8 bCanTrace : 1;
+	uint8 bCanTrace : 1 = false;
 
 	FComponentQueryParams QueryParams;
 
