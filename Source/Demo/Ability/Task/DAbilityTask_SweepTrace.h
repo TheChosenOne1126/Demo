@@ -26,10 +26,10 @@ public:
 
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
 	void StartLogic();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
 	void StopLogic();
 
 protected:

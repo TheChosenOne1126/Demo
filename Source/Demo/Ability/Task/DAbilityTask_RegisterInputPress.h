@@ -15,6 +15,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "DAbility|Task", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
 	static UDAbilityTask_RegisterInputPress* RegisterInputPress(UGameplayAbility* OwningAbility, bool bTriggerOnce = false);
 
+	virtual void OnDestroy(bool bInOwnerFinished) override;
+
 	UFUNCTION(BlueprintCallable)
 	void SetEnableTrigger(bool bEnable);
 

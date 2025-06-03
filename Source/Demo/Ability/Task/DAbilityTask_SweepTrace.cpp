@@ -120,14 +120,24 @@ void UDAbilityTask_SweepTrace::Activate()
 {
 	Super::Activate();
 
-	for (const AActor* Avatar = GetAvatarActor(); IsValid(Avatar); Avatar = Avatar->GetOwner())
-	{
-		QueryParams.AddIgnoredActor(Avatar);
-	}
-
-	if (!Ability || !Ability->GetCurrentActorInfo() || !Ability->GetCurrentActorInfo()->IsNetAuthority())
+	if (!Ability || !Ability->GetCurrentActorInfo())
 	{
 		return;
+	}
+
+	if (!Ability->GetCurrentActorInfo()->IsNetAuthority())
+	{
+		for (const AActor* Avatar = GetAvatarActor(); IsValid(Avatar); Avatar = Avatar->GetOwner())
+		{
+			QueryParams.AddIgnoredActor(Avatar);
+		}
+
+		SweptComponent = UStatics::FindSweptComponent(GetAvatarActor());
+
+		QueryParams.IgnoreMask = SweptComponent->GetMoveIgnoreMask();
+		QueryParams.bTraceComplex = SweptComponent->bTraceComplexOnMove;
+
+		bCanTrace = false;
 	}
 
 	DelegateHandle = AbilitySystemComponent->AbilityTargetDataSetDelegate(GetAbilitySpecHandle(), GetActivationPredictionKey()).AddWeakLambda(
@@ -141,13 +151,6 @@ void UDAbilityTask_SweepTrace::Activate()
 				ValidData.Broadcast(MutableData);
 			}
 		});
-
-	SweptComponent = UStatics::FindSweptComponent(GetAvatarActor());
-	
-	QueryParams.IgnoreMask = SweptComponent->GetMoveIgnoreMask();
-	QueryParams.bTraceComplex = SweptComponent->bTraceComplexOnMove;
-
-	bCanTrace = false;
 }
 
 void UDAbilityTask_SweepTrace::TriggerOnSwept(TArray<FHitResult>& HitResults) const

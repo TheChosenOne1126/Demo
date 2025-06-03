@@ -68,8 +68,11 @@ void UDAbilityTask_PlayMontageWaitEvent::Activate()
 			{
 				if (ShouldBroadcastAbilityTaskDelegates())
 				{
-					FGameplayEventData TempData = *EventData;
-					TempData.EventTag = EventTag;
+					FGameplayEventData TempData;
+					if (EventData)
+					{
+						TempData = *EventData;
+					}
 
 					OnReceived.Broadcast(EventTag, TempData);
 				}

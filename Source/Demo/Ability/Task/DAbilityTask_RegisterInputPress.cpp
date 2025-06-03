@@ -12,6 +12,17 @@ UDAbilityTask_RegisterInputPress* UDAbilityTask_RegisterInputPress::RegisterInpu
 	return AbilityTask;
 }
 
+void UDAbilityTask_RegisterInputPress::OnDestroy(bool bInOwnerFinished)
+{
+	if (AbilitySystemComponent.IsValid())
+	{
+		AbilitySystemComponent->AbilityReplicatedEventDelegate(EAbilityGenericReplicatedEvent::InputPressed,
+			GetAbilitySpecHandle(), GetActivationPredictionKey()).Remove(DelegateHandle);
+	}
+	
+	Super::OnDestroy(bInOwnerFinished);
+}
+
 void UDAbilityTask_RegisterInputPress::SetEnableTrigger(bool bEnable)
 {
 	bCanTrigger = bEnable;
@@ -33,7 +44,11 @@ void UDAbilityTask_RegisterInputPress::Activate()
 		if (Spec && Spec->InputPressed)
 		{
 			OnTriggerPressed();
-			return;
+
+			if (bTriggerOnce)
+			{
+				return;
+			}
 		}
 	}
 
@@ -53,9 +68,6 @@ void UDAbilityTask_RegisterInputPress::OnTriggerPressed()
 	{
 		return;
 	}
-
-	AbilitySystemComponent->AbilityReplicatedEventDelegate(EAbilityGenericReplicatedEvent::InputPressed,
-		GetAbilitySpecHandle(), GetActivationPredictionKey()).Remove(DelegateHandle);
 
 	FScopedPredictionWindow ScopedPrediction(AbilitySystemComponent.Get(), IsPredictingClient());
 
