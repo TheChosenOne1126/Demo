@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "DAbilityTask_RegisterInputPress.generated.h"
+#include "DAbilityTask_ContinueToListenInputPress.generated.h"
 
 UCLASS()
-class DEMO_API UDAbilityTask_RegisterInputPress : public UAbilityTask
+class DEMO_API UDAbilityTask_ContinueToListenInputPress : public UAbilityTask
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "DAbility|Task", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
-	static UDAbilityTask_RegisterInputPress* RegisterInputPress(UGameplayAbility* OwningAbility, bool bTriggerOnce = false);
+	static UDAbilityTask_ContinueToListenInputPress* ContinueToListenInputPress(UGameplayAbility* OwningAbility, bool bStartTrigger = false);
 
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
@@ -27,10 +27,7 @@ protected:
 	FGenericGameplayTaskDelegate OnPress;
 
 private:
-	void OnTriggerPressed();
-	
-	UPROPERTY()
-	uint8 bTriggerOnce : 1;
+	void OnTriggerPressed() const;
 
 	UPROPERTY()
 	uint8 bCanTrigger : 1;

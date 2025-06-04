@@ -1,18 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "DAbilityTask_RegisterInputPress.h"
+#include "DAbilityTask_ContinueToListenInputPress.h"
 #include "AbilitySystemComponent.h"
 #include "Global/Statics.h"
 
-UDAbilityTask_RegisterInputPress* UDAbilityTask_RegisterInputPress::RegisterInputPress(UGameplayAbility* OwningAbility, bool bTriggerOnce)
+UDAbilityTask_ContinueToListenInputPress* UDAbilityTask_ContinueToListenInputPress::ContinueToListenInputPress(UGameplayAbility* OwningAbility, bool bStartTrigger)
 {
 	ThisClass* AbilityTask = NewAbilityTask<ThisClass>(OwningAbility);
-	AbilityTask->bTriggerOnce = bTriggerOnce;
-	AbilityTask->bCanTrigger = bTriggerOnce;
+	AbilityTask->bCanTrigger = bStartTrigger;
 	return AbilityTask;
 }
 
-void UDAbilityTask_RegisterInputPress::OnDestroy(bool bInOwnerFinished)
+void UDAbilityTask_ContinueToListenInputPress::OnDestroy(bool bInOwnerFinished)
 {
 	if (AbilitySystemComponent.IsValid())
 	{
@@ -23,12 +22,12 @@ void UDAbilityTask_RegisterInputPress::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-void UDAbilityTask_RegisterInputPress::SetEnableTrigger(bool bEnable)
+void UDAbilityTask_ContinueToListenInputPress::SetEnableTrigger(bool bEnable)
 {
 	bCanTrigger = bEnable;
 }
 
-void UDAbilityTask_RegisterInputPress::Activate()
+void UDAbilityTask_ContinueToListenInputPress::Activate()
 {
 	Super::Activate();
 
@@ -41,14 +40,9 @@ void UDAbilityTask_RegisterInputPress::Activate()
 	if (IsLocallyControlled())
 	{
 		const FGameplayAbilitySpec* Spec = Ability->GetCurrentAbilitySpec();
-		if (Spec && Spec->InputPressed)
+		if (Spec && Spec->InputPressed && bCanTrigger)
 		{
 			OnTriggerPressed();
-
-			if (bTriggerOnce)
-			{
-				return;
-			}
 		}
 	}
 
@@ -62,7 +56,7 @@ void UDAbilityTask_RegisterInputPress::Activate()
 	}
 }
 
-void UDAbilityTask_RegisterInputPress::OnTriggerPressed()
+void UDAbilityTask_ContinueToListenInputPress::OnTriggerPressed() const
 {
 	if (!AbilitySystemComponent.IsValid() || !bCanTrigger)
 	{
@@ -84,10 +78,5 @@ void UDAbilityTask_RegisterInputPress::OnTriggerPressed()
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
 		OnPress.Broadcast();
-	}
-
-	if (bTriggerOnce)
-	{
-		EndTask();
 	}
 }
