@@ -66,7 +66,7 @@ void UDAbilityTask_SweepTrace::OnDestroy(bool bInOwnerFinished)
 	Super::OnDestroy(bInOwnerFinished);
 }
 
-void UDAbilityTask_SweepTrace::StartLogic()
+void UDAbilityTask_SweepTrace::StartLogic(bool bInitialOverlap)
 {
 	if (!SweptComponent.IsValid())
 	{
@@ -77,6 +77,13 @@ void UDAbilityTask_SweepTrace::StartLogic()
 	SweepResults.Reset();
 
 	LastLocation = SweptComponent->GetComponentLocation();
+
+	bCanTrace = true;
+
+	if (!bInitialOverlap)
+	{
+		return;
+	}
 
 	const UWorld* World = GetWorld();
 	if (!IsValid(World))
@@ -107,8 +114,6 @@ void UDAbilityTask_SweepTrace::StartLogic()
 			TriggerOnSwept(HitResults);
 		}
 	}
-
-	bCanTrace = true;
 }
 
 void UDAbilityTask_SweepTrace::StopLogic()

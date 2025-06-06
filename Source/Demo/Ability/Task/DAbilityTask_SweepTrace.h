@@ -27,7 +27,7 @@ public:
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
-	void StartLogic();
+	void StartLogic(bool bInitialOverlap);
 
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
 	void StopLogic();
