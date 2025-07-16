@@ -155,6 +155,7 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 		}
 
 		AbilitySpec->InputPressed = true;
+		ServerSetInputPressed(Handle);
 
 		if (AbilitySpec->IsActive())
 		{
@@ -195,7 +196,7 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 		}
 
 		AbilitySpec->InputPressed = false;
-		ServerSetInputReleased(AbilitySpec->Handle);
+		ServerSetInputReleased(Handle);
 
 		if (AbilitySpec->IsActive())
 		{
