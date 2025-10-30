@@ -14,3 +14,26 @@ void UDAnimInstance::InitializeTagsByAbilitySystem(UAbilitySystemComponent* Asc)
 
 	TagPropertyMap.Initialize(this, Asc);
 }
+
+void UDAnimInstance::UpdateForwardAndSpeed()
+{
+	if (IsValid(GetWorld()) && GetWorld()->IsPreviewWorld())
+	{
+		return;
+	}
+
+	const APawn* Pawn = TryGetPawnOwner();
+	if (!IsValid(Pawn))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid Pawn Owner!"), __FUNCTION__));
+		return;
+	}
+
+	const FVector Velocity = Pawn->GetVelocity();
+
+	const FVector Forward = Pawn->GetActorForwardVector();
+	ForwardSpeed = Velocity.Dot(Forward) / Forward.SizeSquared();
+
+	const FVector Right = Pawn->GetActorRightVector();
+	RightSpeed = Velocity.Dot(Right) / Right.SizeSquared();
+}
