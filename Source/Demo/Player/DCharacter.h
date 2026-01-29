@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/Character.h"
 #include "DCharacter.generated.h"
 
@@ -22,4 +23,12 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void OnRep_PlayerState() override;
+	
+	void SetPawnTag(const FGameplayTag& NewPawnTag) { PawnTag = NewPawnTag; }
+	
+	const FGameplayTag& GetPawnTag() const { return PawnTag; }
+	
+protected:
+	UPROPERTY(Transient)
+	FGameplayTag PawnTag;
 };

@@ -5,14 +5,10 @@
 #include "CoreMinimal.h"
 #include "DPlayerState.h"
 #include "GameplayAbilitySpec.h"
-#include "DataAsset/AbilityDataAsset.h"
-#include "Interface/AbilitySlotInterface.h"
 #include "HeroPlayerState.generated.h"
 
-class UHeroAttributeViewModel;
-
 UCLASS()
-class DEMO_API AHeroPlayerState : public ADPlayerState, public IAbilitySlotInterface
+class DEMO_API AHeroPlayerState : public ADPlayerState
 {
 	GENERATED_BODY()
 
@@ -29,14 +25,6 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastUpdateAbilityLevel(const FGameplayAbilitySpec& AbilitySpec);
 
-	UFUNCTION(Client, Reliable)
-	void ClientInitAbilitySystem(const TArray<FAbilitySlotData>& AbilitySlotData);
-
-	virtual void InitAbilitySlotData(FGameplayAbilitySpecHandle AbilitySpecHandle, FAbilityData& AbilityData, FGameplayTagContainer& AbilityTags) override;
-	
-	UPROPERTY()
-	TObjectPtr<UHeroAttributeViewModel> HeroAttributeViewModel;
-
 protected:
 	void OnXpAttributeChange(const FOnAttributeChangeData& XpData);
 
@@ -47,8 +35,4 @@ protected:
 	void OnAgilityAttributeChange(const FOnAttributeChangeData& AgilityData, bool bIsExtra);
 
 	void OnSpAttributeChange(const FOnAttributeChangeData& SpData, bool bIsUltimate);
-
-private:
-	UPROPERTY()
-	TArray<FAbilitySlotData> AbilitySlotDataArr;
 };

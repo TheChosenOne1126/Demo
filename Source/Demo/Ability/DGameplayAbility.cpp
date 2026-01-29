@@ -2,8 +2,9 @@
 
 #include "DGameplayAbility.h"
 #include "AbilitySystemComponent.h"
+#include "Component/DAbilitySystemComponent.h"
+#include "GameFramework/Character.h"
 #include "Global/GlobalTags.h"
-#include "Global/MessageSubsystem.h"
 #include "Global/Statics.h"
 
 UDGameplayAbility::UDGameplayAbility()
@@ -90,7 +91,7 @@ void UDGameplayAbility::ApplyCooldown(
 	}
 	
 	EffectSpecHandle.Data->DynamicGrantedTags.AppendTags(CooldownTags);
-	const float Magnitude = CooldownDuration.GetValueAtLevel(GetAbilityLevel(Handle, ActorInfo));
+	const float Magnitude = LuaObtainCooldownMagnitude();
 	EffectSpecHandle.Data->SetSetByCallerMagnitude(GlobalTags::SetByCallerCooldownValueTag, Magnitude);
 	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, EffectSpecHandle);
 }
@@ -100,7 +101,8 @@ bool UDGameplayAbility::CheckCost(
 	const FGameplayAbilityActorInfo* ActorInfo,
 	FGameplayTagContainer* OptionalRelevantTags) const
 {
-	return SetByCallerCostMap.IsEmpty() || Super::CheckCost(Handle, ActorInfo, OptionalRelevantTags);
+	TMap<FGameplayTag, float> CostInfo;
+	return !LuaObtainCostInfo(CostInfo) || CostInfo.IsEmpty() || Super::CheckCost(Handle, ActorInfo, OptionalRelevantTags);
 }
 
 void UDGameplayAbility::ApplyCost(
@@ -109,7 +111,8 @@ void UDGameplayAbility::ApplyCost(
 	const FGameplayAbilityActivationInfo ActivationInfo) const
 {
 	const UGameplayEffect* CostEffect = GetCostGameplayEffect();
-	if (!IsValid(CostEffect) || SetByCallerCostMap.IsEmpty())
+	TMap<FGameplayTag, float> CostInfo;
+	if (!IsValid(CostEffect) || !LuaObtainCostInfo(CostInfo) || CostInfo.IsEmpty())
 	{
 		return;
 	}
@@ -120,26 +123,13 @@ void UDGameplayAbility::ApplyCost(
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid EffectSpecHandle"), __FUNCTION__));
 		return;
 	}
-	
-	for (auto&[Tag, ScalableFloat] : SetByCallerCostMap)
+
+	for (const auto& [CostTag, CostValue] : CostInfo)
 	{
-		const float Magnitude = ScalableFloat.GetValueAtLevel(GetAbilityLevel(Handle, ActorInfo));
-		EffectSpecHandle.Data->SetSetByCallerMagnitude(Tag, Magnitude);
+		EffectSpecHandle.Data->SetSetByCallerMagnitude(CostTag, CostValue);
 	}
 	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, EffectSpecHandle);
 }
-
-#if WITH_EDITOR
-void UDGameplayAbility::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(ThisClass, ActivationCancelTags))
-	{
-		ActivationBlockedTags.AppendTags(ActivationCancelTags);
-	}
-}
-#endif
 
 void UDGameplayAbility::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
@@ -181,7 +171,7 @@ void UDGameplayAbility::ActivateAbility(
 		return;
 	}
 
-	auto Lambda = [this](const FGameplayTag Tag, int32 NewCount) -> void
+	const auto& Lambda = [this](const FGameplayTag Tag, int32 NewCount) -> void
 	{
 		if (NewCount > 0 && ActivationCancelTags.HasTagExact(Tag))
 		{
@@ -207,7 +197,8 @@ void UDGameplayAbility::EndAbility(
 		return;
 	}
 
-	if (!ActorInfo->AbilitySystemComponent.IsValid())
+	const TWeakObjectPtr<UAbilitySystemComponent> Asc = ActorInfo->AbilitySystemComponent;
+	if (!Asc.IsValid())
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UDAbilitySystemComponent"), __FUNCTION__));
 		return;
@@ -219,19 +210,204 @@ void UDGameplayAbility::EndAbility(
 		return;
 	}
 	
-	FGameplayAbilitySpec* AbilitySpec = ActorInfo->AbilitySystemComponent->FindAbilitySpecFromHandle(Handle);
+	FGameplayAbilitySpec* AbilitySpec = Asc->FindAbilitySpecFromHandle(Handle);
 	if (!AbilitySpec)
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilitySpec"), __FUNCTION__));
 		return;
 	}
 
-	ActorInfo->AbilitySystemComponent->RemoveLooseGameplayTags(AbilitySpec->GetDynamicSpecSourceTags());
+	Asc->RemoveLooseGameplayTags(AbilitySpec->GetDynamicSpecSourceTags());
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
 	for (const FGameplayTag& ActivationCancelTag : ActivationCancelTags)
 	{
-		ActorInfo->AbilitySystemComponent->RegisterGameplayTagEvent(ActivationCancelTag).RemoveAll(this);
+		Asc->RegisterGameplayTagEvent(ActivationCancelTag).RemoveAll(this);
 	}
+
+	StopPlayMontage();
+
+	Asc->RemoveGameplayEventTagContainerDelegate(EventTags, GameplayEventDelegateHandle);
+	GameplayEventDelegateHandle.Reset();
+	
+	EventTags.Reset();
+}
+
+void UDGameplayAbility::LuaPlayMontage(
+	UAnimMontage* Montage,
+	float Rate,
+	FName StartSection,
+	float StartTimeSeconds)
+{
+	if (!IsValid(Montage))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Montage"), __FUNCTION__));
+		return;
+	}
+
+	StopPlayMontage();
+	
+	UAbilitySystemComponent* Asc = GetAbilitySystemComponentFromActorInfo();
+	if (!IsValid(Asc))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UDAbilitySystemComponent"), __FUNCTION__));
+		return;
+	}
+
+	if (Asc->PlayMontage(this, CurrentActivationInfo, Montage, Rate, StartSection, StartTimeSeconds) <= 0.f)
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: failed to play montage:%s"), __FUNCTION__, *GetNameSafe(Montage)));
+		return;
+	}
+
+	if (!CurrentActorInfo)
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid CurrentActorInfo"), __FUNCTION__));
+		return;
+	}
+	
+	UAnimInstance* AnimInstance = CurrentActorInfo->GetAnimInstance();
+	if (!IsValid(AnimInstance))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AnimInstance"), __FUNCTION__));
+		return;
+	}
+
+	FOnMontageBlendedInEnded BlendedInEndedDelegate;
+	BlendedInEndedDelegate.BindWeakLambda(this,
+		[this](UAnimMontage* BlendedInMontage) -> void
+		{
+			LuaOnMontageBlendedIn(BlendedInMontage);
+		});
+	AnimInstance->Montage_SetBlendedInDelegate(BlendedInEndedDelegate, Montage);
+
+	FOnMontageBlendingOutStarted BlendingOutStartedDelegate;
+	BlendingOutStartedDelegate.BindWeakLambda(this,
+		[this, Asc, Montage](UAnimMontage* BlendingOutMontage, bool bInterrupted) -> void
+		{
+			if (BlendingOutMontage == Montage && GetCurrentMontage() == Montage)
+			{
+				ACharacter* Character = Cast<ACharacter>(GetAvatarActorFromActorInfo());
+				if (Character && (Character->GetLocalRole() == ROLE_Authority || (Character->GetLocalRole() == ROLE_AutonomousProxy
+					&& GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
+				{
+					Character->SetAnimRootMotionTranslationScale(1.f);
+				}
+
+				if (bInterrupted)
+				{
+					Asc->ClearAnimatingAbility(this);
+				}
+			}
+
+			if (!bInterrupted)
+			{
+				LuaOnMontageBlendedOut(BlendingOutMontage);
+			}
+		});
+	AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutStartedDelegate, Montage);
+
+	FOnMontageEnded EndedDelegate;
+	EndedDelegate.BindWeakLambda(this,
+		[this](UAnimMontage* EndedMontage, bool bInterrupted) -> void
+		{
+			if (!bInterrupted)
+			{
+				LuaOnMontageEnd(EndedMontage);
+			}
+		});
+	AnimInstance->Montage_SetEndDelegate(EndedDelegate, Montage);
+
+	ACharacter* Character = Cast<ACharacter>(GetAvatarActorFromActorInfo());
+	if (Character && (Character->GetLocalRole() == ROLE_Authority || (Character->GetLocalRole() == ROLE_AutonomousProxy
+		&& GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
+	{
+		Character->SetAnimRootMotionTranslationScale(1.f);
+	}
+}
+
+void UDGameplayAbility::LuaWaitGameplayEvent(const FGameplayTagContainer& InEventTags, bool bSyncToServer)
+{
+	UDAbilitySystemComponent* Asc = Cast<UDAbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
+	if (!IsValid(Asc))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UDAbilitySystemComponent"), __FUNCTION__));
+		return;
+	}
+
+	GameplayEventDelegateHandle = Asc->AddGameplayEventTagContainerDelegate(InEventTags, 
+		FGameplayEventTagMulticastDelegate::FDelegate::CreateWeakLambda(this,
+			[this, Asc, bSyncToServer](FGameplayTag EventTag, const FGameplayEventData* EventData) -> void
+			{
+				if (!EventData)
+				{
+					return;
+				}
+				
+				LuaOnEventHandle(EventTag, *EventData);
+
+				if (bSyncToServer && IsPredictingClient())
+				{
+					Asc->ServerHandleGameplayEvent(EventTag, *EventData);
+				}
+			}));
+
+	EventTags.AppendTags(InEventTags);
+}
+
+void UDGameplayAbility::SetupActivationCancelTags(const FGameplayTagContainer& InActivationCancelTags)
+{
+	if (!InActivationCancelTags.IsValid())
+	{
+		return;
+	}
+	
+	ActivationCancelTags = InActivationCancelTags;
+	
+	ActivationBlockedTags.AppendTags(InActivationCancelTags);
+}
+
+void UDGameplayAbility::StopPlayMontage()
+{
+	if (!IsValid(CurrentMontage))
+	{
+		return;
+	}
+	
+	UAbilitySystemComponent* Asc = GetAbilitySystemComponentFromActorInfo();
+	if (!IsValid(Asc))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UDAbilitySystemComponent"), __FUNCTION__));
+		return;
+	}
+
+	if (Asc->GetAnimatingAbility() != this)
+	{
+		UStatics::Log(this, ELogType::Warning, FString::Printf(TEXT("%hs: animating ability is not {%s}, is {%s}"),
+			__FUNCTION__, *GetNameSafe(this), *GetNameSafe(Asc->GetAnimatingAbility())));
+		return;
+	}
+
+	if (!CurrentActorInfo)
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid CurrentActorInfo"), __FUNCTION__));
+		return;
+	}
+
+	const UAnimInstance* AnimInstance = CurrentActorInfo->GetAnimInstance();
+	if (!IsValid(AnimInstance))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AnimInstance"), __FUNCTION__));
+		return;
+	}
+
+	if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(CurrentMontage))
+	{
+		MontageInstance->OnMontageBlendedInEnded.Unbind();
+		MontageInstance->OnMontageBlendingOutStarted.Unbind();
+		MontageInstance->OnMontageEnded.Unbind();
+	}
+
+	MontageStop();
 }

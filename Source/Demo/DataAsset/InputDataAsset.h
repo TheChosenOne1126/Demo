@@ -11,18 +11,6 @@
 class UInputMappingContext;
 
 USTRUCT(BlueprintType)
-struct FInputData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UInputAction> Action;
-
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag Tag;
-};
-
-USTRUCT(BlueprintType)
 struct FInputMappingData
 {
 	GENERATED_BODY()
@@ -41,10 +29,10 @@ class DEMO_API UInputDataAsset : public UDataAsset
 
 public:
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FInputData> NativeInputs;
+	TMap<FGameplayTag, TObjectPtr<UInputAction>> NativeInputMap;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FInputData> AbilityInputs;
+	TMap<FGameplayTag, TObjectPtr<UInputAction>> AbilityInputMap;
 
 	UPROPERTY(EditDefaultsOnly)
 	FInputMappingData InputMappingData;

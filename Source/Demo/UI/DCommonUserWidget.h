@@ -14,6 +14,4 @@ class DEMO_API UDCommonUserWidget : public UCommonUserWidget
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "DViewModel")
-	UBaseAttributeViewModel* GetBaseAttributeViewModel() const;
 };

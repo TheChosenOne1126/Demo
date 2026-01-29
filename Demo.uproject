@@ -23,15 +23,15 @@
 			"Enabled": true
 		},
 		{
-			"Name": "ModelViewViewModel",
-			"Enabled": true
-		},
-		{
 			"Name": "CommonUI",
 			"Enabled": true
 		},
 		{
 			"Name": "PoseSearch",
+			"Enabled": true
+		},
+		{
+			"Name": "UnLua",
 			"Enabled": true
 		}
 	]

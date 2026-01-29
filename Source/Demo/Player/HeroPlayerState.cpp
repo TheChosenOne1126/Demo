@@ -1,14 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "HeroPlayerState.h"
-#include "DPlayerController.h"
 #include "Attribute/HeroAttributeSet.h"
 #include "Global/GlobalTags.h"
 #include "Global/MessageStructTypes.h"
 #include "Global/MessageSubsystem.h"
 #include "Global/Statics.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "UI/HeroAttributeViewModel.h"
 
 AHeroPlayerState::AHeroPlayerState()
 {
@@ -49,8 +47,6 @@ void AHeroPlayerState::InitAbilitySystem(ADCharacter* Character)
 	}
 
 	Asc->ApplyModToAttribute(UHeroAttributeSet::GetMaxSpAttribute(), EGameplayModOp::Override, MaxAbilityPoint);
-	
-	ClientInitAbilitySystem(AbilitySlotDataArr);
 }
 
 void AHeroPlayerState::RegisterAttributes()
@@ -61,11 +57,6 @@ void AHeroPlayerState::RegisterAttributes()
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
 		return;
-	}
-
-	if (!IsValid(HeroAttributeViewModel) && !UKismetSystemLibrary::IsDedicatedServer(this))
-	{
-		HeroAttributeViewModel = NewObject<UHeroAttributeViewModel>(this, "HeroAttributeViewModel");
 	}
 
 	Asc->RegisterAttributeValueChange(UHeroAttributeSet::GetXpAttribute(), this, &ThisClass::OnXpAttributeChange);
@@ -181,123 +172,28 @@ void AHeroPlayerState::NetMulticastUpdateAbilityLevel_Implementation(const FGame
 	MessageSubsystem->BroadcastMessage(GlobalTags::AbilityUpdateLevelTag, AbilitySpec);
 }
 
-void AHeroPlayerState::ClientInitAbilitySystem_Implementation(const TArray<FAbilitySlotData>& AbilitySlotData)
-{
-	if (!UKismetSystemLibrary::IsStandalone(this))
-	{
-		RegisterAttributes();
-	}
-
-	ADPlayerController* PlayerController = Cast<ADPlayerController>(GetPlayerController());
-	if (!IsValid(PlayerController))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid PlayerController"), __FUNCTION__));
-		return;
-	}
-
-	PlayerController->CreateHUD(AbilitySlotData);
-}
-
-void AHeroPlayerState::InitAbilitySlotData(FGameplayAbilitySpecHandle AbilitySpecHandle, FAbilityData& AbilityData, FGameplayTagContainer& AbilityTags)
-{
-	AbilitySlotDataArr.Reset();
-	FAbilitySlotData& AbilitySlotData = AbilitySlotDataArr.Emplace_GetRef();
-	AbilitySlotData.AbilitySpecHandle = AbilitySpecHandle;
-	AbilitySlotData.AbilityLevel = AbilityData.InitialAbilityLevel;
-	AbilitySlotData.AbilityTexture = AbilityData.AbilityTexture;
-	AbilitySlotData.SlotTags = AbilityTags.Filter(FGameplayTagContainer(GlobalTags::AbilitySlotTag));
-}
-
 void AHeroPlayerState::OnXpAttributeChange(const FOnAttributeChangeData& XpData)
 {
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f"),
 		__FUNCTION__, XpData.NewValue, XpData.OldValue));
-
-	if (!UKismetSystemLibrary::IsDedicatedServer(this))
-	{
-		if (!IsValid(HeroAttributeViewModel))
-		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel"), __FUNCTION__));
-			return;
-		}
-
-		HeroAttributeViewModel->SetXp(XpData.NewValue);
-	}
 }
 
 void AHeroPlayerState::OnStrengthAttributeChange(const FOnAttributeChangeData& StrengthData, bool bIsExtra)
 {
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f - %s"),
 		__FUNCTION__, StrengthData.NewValue, StrengthData.OldValue, bIsExtra ? TEXT("Extra") : TEXT("Base")));
-
-	if (!UKismetSystemLibrary::IsDedicatedServer(this))
-	{
-		if (!IsValid(HeroAttributeViewModel))
-		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel - %s"),
-				__FUNCTION__, bIsExtra ? TEXT("Extra") : TEXT("Base")));
-			return;
-		}
-
-		if (bIsExtra)
-		{
-			HeroAttributeViewModel->SetExtraStrength(StrengthData.NewValue);
-		}
-		else
-		{
-			HeroAttributeViewModel->SetStrength(StrengthData.NewValue);
-		}
-	}
 }
 
 void AHeroPlayerState::OnIntelligenceAttributeChange(const FOnAttributeChangeData& IntelligenceData, bool bIsExtra)
 {
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f - %s"),
 		__FUNCTION__, IntelligenceData.NewValue, IntelligenceData.OldValue, bIsExtra ? TEXT("Extra") : TEXT("Base")));
-
-	if (!UKismetSystemLibrary::IsDedicatedServer(this))
-	{
-		if (!IsValid(HeroAttributeViewModel))
-		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel - %s"),
-				__FUNCTION__, bIsExtra ? TEXT("Extra") : TEXT("Base")));
-			return;
-		}
-
-		if (bIsExtra)
-		{
-			HeroAttributeViewModel->SetExtraIntelligence(IntelligenceData.NewValue);
-		}
-		else
-		{
-			HeroAttributeViewModel->SetIntelligence(IntelligenceData.NewValue);
-		}
-	}
 }
 
 void AHeroPlayerState::OnAgilityAttributeChange(const FOnAttributeChangeData& AgilityData, bool bIsExtra)
 {
 	UStatics::Log(this, ELogType::Verbose, FString::Printf(TEXT("%hs: New Data = %f, Old Data = %f - %s"),
 		__FUNCTION__, AgilityData.NewValue, AgilityData.OldValue, bIsExtra ? TEXT("Extra") : TEXT("Base")));
-
-	if (!UKismetSystemLibrary::IsDedicatedServer(this))
-	{
-		if (!IsValid(HeroAttributeViewModel))
-		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AttributeViewModel - %s"),
-				__FUNCTION__, bIsExtra ? TEXT("Extra") : TEXT("Base")));
-			return;
-		}
-
-		if (bIsExtra)
-		{
-			HeroAttributeViewModel->SetExtraAgility(AgilityData.NewValue);
-		}
-		else
-		{
-			HeroAttributeViewModel->SetAgility(AgilityData.NewValue);
-		}
-	}
 }
 
 void AHeroPlayerState::OnSpAttributeChange(const FOnAttributeChangeData& SpData, bool bIsUltimate)

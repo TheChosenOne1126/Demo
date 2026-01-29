@@ -14,16 +14,17 @@ class DEMO_API UDAssetManager : public UAssetManager
 	GENERATED_BODY()
 
 public:
-	static UDAssetManager& GetRef();
-
-	virtual void StartInitialLoading() override;
+	static UDAssetManager& Get();
 	
 	UPawnDataAsset* GetPawnDataAsset() const;
+	
+	FSimpleMulticastDelegate OnPawnDataLoaded;
 
-protected:
 	void LoadPawnData();
 
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<UPawnDataAsset> PawnDataAsset;
+	
+	TSharedPtr<FStreamableHandle> PawnDataHandle;
 };

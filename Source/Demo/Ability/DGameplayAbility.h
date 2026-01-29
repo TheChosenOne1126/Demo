@@ -13,7 +13,7 @@ class DEMO_API UDGameplayAbility : public UGameplayAbility
 
 public:
 	UDGameplayAbility();
-
+	
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
@@ -39,10 +39,6 @@ public:
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo) const override;
-
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
 	
 protected:
 	virtual void ActivateAbility(
@@ -57,18 +53,50 @@ protected:
 		bool bReplicateEndAbility,
 		bool bWasCancelled) override;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Cooldowns")
-	FScalableFloat CooldownDuration;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Cooldowns")
+	UFUNCTION()
+	void LuaPlayMontage(
+		UAnimMontage* Montage,
+		float Rate,
+		FName StartSection,
+		float StartTimeSeconds);
+	
+	UFUNCTION()
+	void LuaWaitGameplayEvent(const FGameplayTagContainer& InEventTags, bool bSyncToServer);
+	
+	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	void LuaOnMontageBlendedIn(UAnimMontage* Montage);
+	
+	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	void LuaOnMontageBlendedOut(UAnimMontage* Montage);
+	
+	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	void LuaOnMontageEnd(UAnimMontage* Montage);
+	
+	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	float LuaObtainCooldownMagnitude() const;
+	
+	UPROPERTY()
 	FGameplayTagContainer CooldownTags;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Costs")
-	TMap<FGameplayTag, FScalableFloat> SetByCallerCostMap;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Tags")
-	FGameplayTagContainer ActivationCancelTags;
+	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	void LuaOnEventHandle(FGameplayTag EventTag, const FGameplayEventData& EventData);
+	
+	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	bool LuaObtainCostInfo(TMap<FGameplayTag, float>& OutCostInfo) const;
+	
+	UFUNCTION()
+	void SetupActivationCancelTags(const FGameplayTagContainer& InActivationCancelTags);
 
 private:
+	void StopPlayMontage();
+	
 	FDelegateHandle ActivationCancelTagsDelegateHandle;
+	
+	UPROPERTY(Transient)
+	FGameplayTagContainer EventTags;
+	
+	FDelegateHandle GameplayEventDelegateHandle;
+	
+	UPROPERTY()
+	FGameplayTagContainer ActivationCancelTags;
 };

@@ -20,12 +20,12 @@ public class Demo : ModuleRules
 			"GameplayTags",
 			"GameplayAbilities",
 			"GameplayTasks",
-			"ModelViewViewModel",
 			"NetCore",
 			"CommonUI",
 			"UMG",
 			"DeveloperSettings",
-			"AIModule"
+			"AIModule",
+			"UnLua"
 		});
 	}
 }

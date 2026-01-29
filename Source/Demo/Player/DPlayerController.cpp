@@ -3,10 +3,7 @@
 #include "DPlayerController.h"
 #include "DPlayerState.h"
 #include "Component/DAbilitySystemComponent.h"
-#include "Engine/AssetManager.h"
-#include "Engine/StreamableManager.h"
 #include "Global/Statics.h"
-#include "UI/HUDWidget.h"
 
 void ADPlayerController::PostProcessInput(const float DeltaTime, const bool bGamePaused)
 {
@@ -26,29 +23,4 @@ void ADPlayerController::PostProcessInput(const float DeltaTime, const bool bGam
 	}
 
 	Asc->ProcessAbilityInput();
-}
-
-void ADPlayerController::CreateHUD(const TArray<FAbilitySlotData>& AbilitySlotDataArr)
-{
-	if (IsValid(HUDWidget))
-	{
-		return;
-	}
-
-	if (HUDWidgetClass.IsNull())
-	{
-		return;
-	}
-
-	FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
-	StreamableManager.RequestAsyncLoad(HUDWidgetClass.ToSoftObjectPath(), FStreamableDelegate::CreateWeakLambda(this,
-		[this, AbilitySlotDataArr]() -> void
-		{
-			UClass* LoadedClass = HUDWidgetClass.Get();
-			if (IsValid(LoadedClass))
-			{
-				HUDWidget = CreateWidget<UHUDWidget>(this, LoadedClass, TEXT("HUDWidget"));
-				HUDWidget->InitAbilitySlot(AbilitySlotDataArr);
-			}
-		}));
 }

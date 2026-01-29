@@ -16,7 +16,7 @@ void AHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	const UDAssetManager& AssetManager = UDAssetManager::GetRef();
+	const UDAssetManager& AssetManager = UDAssetManager::Get();
 
 	UPawnDataAsset* PawnDataAsset = AssetManager.GetPawnDataAsset();
 	if (!IsValid(PawnDataAsset))
@@ -25,19 +25,12 @@ void AHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		return;
 	}
 
-	const int32 Index = PawnDataAsset->PawnDataArr.IndexOfByPredicate(
-		[this](const FPawnData& PawnData) -> bool
-		{
-			return PawnData.PawnClass == this->GetClass();
-		});
-
-	if (Index == INDEX_NONE)
+	if (!PawnDataAsset->PawnDataMap.Contains(PawnTag))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in PawnDataArr"), __FUNCTION__));
 		return;
 	}
 
-	const UInputDataAsset* InputDataAsset = PawnDataAsset->PawnDataArr[Index].InputDataAsset;
+	const UInputDataAsset* InputDataAsset = PawnDataAsset->PawnDataMap[PawnTag].InputDataAsset;
 	if (!IsValid(InputDataAsset))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UInputDataAsset"), __FUNCTION__));
@@ -128,20 +121,20 @@ void AHeroCharacter::BindInputActions(UInputComponent* PlayerInputComponent, con
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid EnhancedInputComponent"), __FUNCTION__));
 		return;
 	}
-	
-	const int32 InputMoveIndex = InputDataAsset->NativeInputs.IndexOfByPredicate(
-		[](const FInputData& InputData) -> bool
-		{
-			return InputData.Tag.MatchesTagExact(GlobalTags::InputMoveTag);
-		});
-	
-	if (InputMoveIndex == INDEX_NONE)
+
+	if (!IsValid(InputDataAsset))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Input Move Index in NativeInputs"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid InputDataAsset"), __FUNCTION__));
 		return;
 	}
 
-	const UInputAction* InputMoveAction = InputDataAsset->NativeInputs[InputMoveIndex].Action;
+	if (!InputDataAsset->NativeInputMap.Contains(GlobalTags::InputMoveTag))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Input Move Tag in NativeInputMap"), __FUNCTION__));
+		return;
+	}
+
+	const UInputAction* InputMoveAction = InputDataAsset->NativeInputMap[GlobalTags::InputMoveTag];
 	if (!IsValid(InputMoveAction))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Native InputDataForMove Action"), __FUNCTION__));
@@ -150,19 +143,13 @@ void AHeroCharacter::BindInputActions(UInputComponent* PlayerInputComponent, con
 	
 	InputForMoveHandle = EnhancedInputComp->BindAction(InputMoveAction,	ETriggerEvent::Triggered, this, &AHeroCharacter::InputForMove).GetHandle();
 
-	const int32 InputLookMouseIndex = InputDataAsset->NativeInputs.IndexOfByPredicate(
-		[](const FInputData& InputData) -> bool
-		{
-			return InputData.Tag.MatchesTagExact(GlobalTags::InputLookMouseTag);
-		});
-
-	if (InputLookMouseIndex == INDEX_NONE)
+	if (!InputDataAsset->NativeInputMap.Contains(GlobalTags::InputLookMouseTag))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Input Look Mouse Index in NativeInputs"), __FUNCTION__));
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Input Move Tag in NativeInputMap"), __FUNCTION__));
 		return;
 	}
 
-	const UInputAction* InputLookMouseAction = InputDataAsset->NativeInputs[InputLookMouseIndex].Action;
+	const UInputAction* InputLookMouseAction = InputDataAsset->NativeInputMap[GlobalTags::InputLookMouseTag];
 	if (!IsValid(InputLookMouseAction))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Native InputDataForLookMouse Action"), __FUNCTION__));
@@ -171,25 +158,25 @@ void AHeroCharacter::BindInputActions(UInputComponent* PlayerInputComponent, con
 
 	InputForLookMouseHandle = EnhancedInputComp->BindAction(InputLookMouseAction, ETriggerEvent::Triggered, this, &AHeroCharacter::InputForLookMouseUp).GetHandle();
 
-	for (const FInputData& InputDataForAbility : InputDataAsset->AbilityInputs)
+	for (const auto& [InputTag, InputAction] : InputDataAsset->AbilityInputMap)
 	{
-		if (!InputDataForAbility.Tag.IsValid())
+		if (!InputTag.IsValid())
 		{
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid InputDataForAbility Tag"), __FUNCTION__));
 			continue;
 		}
 
-		if (!IsValid(InputDataForAbility.Action))
+		if (!IsValid(InputAction))
 		{
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid InputDataForAbility Action, Tag:%s"),
-				__FUNCTION__, *InputDataForAbility.Tag.ToString()));
+				__FUNCTION__, *InputTag.ToString()));
 			continue;
 		}
 
-		InputForAbilityHandles.Emplace(EnhancedInputComp->BindAction(InputDataForAbility.Action, ETriggerEvent::Triggered,
-			this, &ThisClass::InputForAbilityPressed, InputDataForAbility.Tag).GetHandle());
-		InputForAbilityHandles.Emplace(EnhancedInputComp->BindAction(InputDataForAbility.Action, ETriggerEvent::Completed,
-			this, &ThisClass::InputForAbilityReleased, InputDataForAbility.Tag).GetHandle());
+		InputForAbilityHandles.Emplace(EnhancedInputComp->BindAction(InputAction, ETriggerEvent::Triggered, this,
+			&ThisClass::InputForAbilityPressed, InputTag).GetHandle());
+		InputForAbilityHandles.Emplace(EnhancedInputComp->BindAction(InputAction, ETriggerEvent::Completed, this,
+			&ThisClass::InputForAbilityReleased, InputTag).GetHandle());
 	}
 }
 

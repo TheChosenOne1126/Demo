@@ -18,7 +18,7 @@ class DEMO_API UDAbilityTask_SweepTrace : public UAbilityTask
 public:
 	UDAbilityTask_SweepTrace();
 
-	UFUNCTION(BlueprintCallable, Category = "DAbility|Task", meta = (DisplayName = "ServerSyncTargetDataBySweep",
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "DAbility|Task", meta = (DisplayName = "ServerSyncTargetDataBySweep",
 		HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = true))
 	static UDAbilityTask_SweepTrace* CreateSweepTrace(UGameplayAbility* OwningAbility);
 
@@ -31,14 +31,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
 	void StopLogic();
+	
+	UPROPERTY(BlueprintAssignable)
+	FServerSyncTargetDataBySweepDelegate ValidData;
 
 protected:
 	virtual void Activate() override;
 
 	void TriggerOnSwept(TArray<FHitResult>& HitResults) const;
-
-	UPROPERTY(BlueprintAssignable)
-	FServerSyncTargetDataBySweepDelegate ValidData;
 	
 private:
 	UPROPERTY()

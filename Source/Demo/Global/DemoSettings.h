@@ -22,4 +22,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Config, Category = "Ability")
 	TSet<int32> GainExtraAbilityPointPawnLevelSet;
+	
+	UPROPERTY(EditDefaultsOnly, Config, Category = "Loading")
+	TSoftClassPtr<UUserWidget> LoadingScreenWidgetClassPath;
 };

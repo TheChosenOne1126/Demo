@@ -40,18 +40,10 @@ void UDAbilitySystemComponent::AbilityForInputPressed(const FGameplayTag& InputT
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputTag is invalid"), __FUNCTION__));
 		return;
 	}
-
-	if (InputTag.MatchesTagExact(GlobalTags::AbilityConfirmTag) && HasMatchingGameplayTag(GlobalTags::AbilityConfirmTag))
-	{
-		LocalInputConfirm();
-		return;
-	}
-
-	if (InputTag.MatchesTagExact(GlobalTags::AbilityCancelTag) && HasMatchingGameplayTag(GlobalTags::AbilityCancelTag))
-	{
-		LocalInputCancel();
-		return;
-	}
+	
+	FGameplayEventData EventData;
+	EventData.EventTag = InputTag;
+	HandleGameplayEvent(GlobalTags::AbilityInputPressTag, &EventData);
 	
 	ABILITYLIST_SCOPE_LOCK()
 	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
@@ -93,6 +85,10 @@ void UDAbilitySystemComponent::AbilityForInputReleased(const FGameplayTag& Input
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputTag is invalid"), __FUNCTION__));
 		return;
 	}
+	
+	FGameplayEventData EventData;
+	EventData.EventTag = InputTag;
+	HandleGameplayEvent(GlobalTags::AbilityInputReleaseTag, &EventData);
 
 	ABILITYLIST_SCOPE_LOCK()
 	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
@@ -131,8 +127,8 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 			continue;
 		}
 
-		AbilitySpec->InputPressed = true;
-
+		AbilitySpecInputPressed(*AbilitySpec);
+		
 		if (!AbilitySpec->IsActive())
 		{
 			AbilitySpecHandlesToActivate.AddUnique(AbilitySpec->Handle);
@@ -147,29 +143,10 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Pressed AbilitySpec"), __FUNCTION__));
 			continue;
 		}
+		
+		AbilitySpecInputPressed(*AbilitySpec);
 
-		if (!IsValid(AbilitySpec->Ability))
-		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Pressed AbilityCDO"), __FUNCTION__));
-			continue;
-		}
-
-		AbilitySpec->InputPressed = true;
-		ServerSetInputPressed(Handle);
-
-		if (AbilitySpec->IsActive())
-		{
-			const UGameplayAbility* AbilityInstance = AbilitySpec->GetPrimaryInstance();
-			if (!IsValid(AbilityInstance))
-			{
-				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability Instance"), __FUNCTION__));
-				continue;
-			}
-
-			InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, AbilitySpec->Handle,
-				AbilityInstance->GetCurrentActivationInfo().GetActivationPredictionKey());
-		}
-		else
+		if (!AbilitySpec->IsActive())
 		{
 			AbilitySpecHandlesToActivate.AddUnique(AbilitySpec->Handle);
 		}
@@ -189,31 +166,21 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 			continue;
 		}
 
-		if (!IsValid(AbilitySpec->Ability))
-		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Released AbilityCDO"), __FUNCTION__));
-			continue;
-		}
-
-		AbilitySpec->InputPressed = false;
-		ServerSetInputReleased(Handle);
-
-		if (AbilitySpec->IsActive())
-		{
-			const UGameplayAbility* AbilityInstance = AbilitySpec->GetPrimaryInstance();
-			if (!IsValid(AbilityInstance))
-			{
-				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability Instance"), __FUNCTION__));
-				continue;
-			}
-
-			InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, AbilitySpec->Handle,
-				AbilityInstance->GetCurrentActivationInfo().GetActivationPredictionKey());
-		}
+		AbilitySpecInputReleased(*AbilitySpec);
 	}
 
 	InputPressedHandles.Reset();
 	InputReleasedHandles.Reset();
+}
+
+void UDAbilitySystemComponent::ServerHandleGameplayEvent_Implementation(FGameplayTag EventTag, const FGameplayEventData& Payload)
+{
+	HandleGameplayEvent(EventTag, &Payload);
+}
+
+bool UDAbilitySystemComponent::ServerHandleGameplayEvent_Validate(FGameplayTag EventTag, const FGameplayEventData& Payload)
+{
+	return true;
 }
 
 void UDAbilitySystemComponent::UnregisterAllAttributeValuesChange()

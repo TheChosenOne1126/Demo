@@ -5,6 +5,7 @@
 #include "GlobalTags.h"
 #include "Ability/DGameplayAbility.h"
 #include "Component/DAbilitySystemComponent.h"
+#include "DataAsset/MontageDataAsset.h"
 #include "DataAsset/PawnDataAsset.h"
 #include "Interface/SweepInterface.h"
 #include "Player/DCharacter.h"
@@ -36,29 +37,28 @@ UDAbilitySystemComponent* UStatics::GetDAbilitySystemComponent(const AActor* Own
 	return Cast<UDAbilitySystemComponent>(Asi->GetAbilitySystemComponent());
 }
 
-UAnimMontage* UStatics::GetDeadMontage(const UDGameplayAbility* Ability)
+UAnimMontage* UStatics::GetMontageByTag(const UDGameplayAbility* Ability, FGameplayTag MontageTag)
 {
+	if (!MontageTag.IsValid())
+	{
+		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: invalid MontageTag"), __FUNCTION__));
+		return nullptr;
+	}
+	
 	if (!IsValid(Ability))
 	{
 		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
 		return nullptr;
 	}
 
-	const AActor* Avatar = Ability->GetAvatarActorFromActorInfo();
+	const ADCharacter* Avatar = Cast<ADCharacter>(Ability->GetAvatarActorFromActorInfo());
 	if (!IsValid(Avatar))
 	{
 		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: invalid AvatarActor"), __FUNCTION__));
 		return nullptr;
 	}
 
-	UClass* AvatarClass = Avatar->GetClass();
-	if (!IsValid(AvatarClass))
-	{
-		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: invalid AvatarClass"), __FUNCTION__));
-		return nullptr;
-	}
-
-	const UDAssetManager& DAssetManager = UDAssetManager::GetRef();
+	const UDAssetManager& DAssetManager = UDAssetManager::Get();
 	UPawnDataAsset* PawnDataAsset = DAssetManager.GetPawnDataAsset();
 	if (!IsValid(PawnDataAsset))
 	{
@@ -66,19 +66,26 @@ UAnimMontage* UStatics::GetDeadMontage(const UDGameplayAbility* Ability)
 		return nullptr;
 	}
 	
-	const int32 Index = PawnDataAsset->PawnDataArr.IndexOfByPredicate(
-		[AvatarClass](const FPawnData& PawnData) -> bool
-		{
-			return AvatarClass->IsChildOf(PawnData.PawnClass);
-		});
-
-	if (Index == INDEX_NONE)
+	if (!PawnDataAsset->PawnDataMap.Contains(Avatar->GetPawnTag()))
 	{
-		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: none Index in PawnDataArr"), __FUNCTION__));
+		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: PawnDataMap no contains Avatar Tag:[%s]"), __FUNCTION__, *Avatar->GetPawnTag().ToString()));
 		return nullptr;
 	}
-
-	return PawnDataAsset->PawnDataArr[Index].DeadMontage;
+	
+	UMontageDataAsset* MontageDataAsset = PawnDataAsset->PawnDataMap[Avatar->GetPawnTag()].MontageDataAsset;
+	if (!IsValid(MontageDataAsset))
+	{
+		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: invalid MontageDataAsset"), __FUNCTION__));
+		return nullptr;
+	}
+	
+	if (!MontageDataAsset->MontageDataMap.Contains(MontageTag))
+	{
+		Log(Ability, ELogType::Error, FString::Printf(TEXT("%hs: Tag[%s] in MontageDataMap"), __FUNCTION__, *MontageTag.ToString()));
+		return nullptr;
+	}
+	
+	return MontageDataAsset->MontageDataMap[MontageTag];
 }
 
 void UStatics::Log(const UObject* Object, ELogType Type, const FString& String, bool bDisplayToScreen)
@@ -202,6 +209,35 @@ void UStatics::DestroyAbilityAvatar(const UDGameplayAbility* Ability)
 	}
 
 	AvatarActor->Destroy();
+}
+
+FGameplayTag UStatics::RequestGameplayTag(const FName TagName)
+{
+	return UGameplayTagsManager::Get().RequestGameplayTag(TagName, true);
+}
+
+TSubclassOf<UGameplayEffect> UStatics::GetGameplayEffectByTag(FGameplayTag EffectTag)
+{
+	UPawnDataAsset* PawnDataAsset = UDAssetManager::Get().GetPawnDataAsset();
+	if (!IsValid(PawnDataAsset))
+	{
+		Log(&UDAssetManager::Get(), ELogType::Error, FString::Printf(TEXT("%hs: invalid Owner"), __FUNCTION__));
+		return nullptr;
+	}
+	
+	const int32 Index = PawnDataAsset->GameplayEffectDataList.IndexOfByPredicate(
+		[EffectTag](const FGameplayEffectData& EffectData) -> bool
+		{
+			return EffectData.Tag.MatchesTagExact(EffectTag);
+		});
+	
+	if (Index == INDEX_NONE)
+	{
+		Log(&UDAssetManager::Get(), ELogType::Error, FString::Printf(TEXT("%hs: none Index in MontageDataList"), __FUNCTION__));
+		return nullptr;
+	}
+	
+	return PawnDataAsset->GameplayEffectDataList[Index].GameplayEffectClass;
 }
 
 UPrimitiveComponent* UStatics::FindSweptComponent(AActor* Owner)

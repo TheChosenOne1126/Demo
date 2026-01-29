@@ -68,6 +68,11 @@ void UDAbilityTask_SweepTrace::OnDestroy(bool bInOwnerFinished)
 
 void UDAbilityTask_SweepTrace::StartLogic(bool bInitialOverlap)
 {
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
+	
 	if (!SweptComponent.IsValid())
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid NewSweptComponent"), __FUNCTION__));
@@ -125,12 +130,7 @@ void UDAbilityTask_SweepTrace::Activate()
 {
 	Super::Activate();
 
-	if (!Ability || !Ability->GetCurrentActorInfo())
-	{
-		return;
-	}
-
-	if (!Ability->GetCurrentActorInfo()->IsNetAuthority())
+	if (IsLocallyControlled())
 	{
 		for (const AActor* Avatar = GetAvatarActor(); IsValid(Avatar); Avatar = Avatar->GetOwner())
 		{
@@ -148,12 +148,20 @@ void UDAbilityTask_SweepTrace::Activate()
 	DelegateHandle = AbilitySystemComponent->AbilityTargetDataSetDelegate(GetAbilitySpecHandle(), GetActivationPredictionKey()).AddWeakLambda(
 		this, [this](const FGameplayAbilityTargetDataHandle& Data, FGameplayTag) -> void
 		{
-			const FGameplayAbilityTargetDataHandle MutableData = Data;
-			AbilitySystemComponent->ConsumeClientReplicatedTargetData(GetAbilitySpecHandle(), GetActivationPredictionKey());
+			if (IsPredictingClient())
+			{
+				FScopedPredictionWindow PredictionWindow(AbilitySystemComponent.Get(), true);
+				AbilitySystemComponent->CallServerSetReplicatedTargetData(GetAbilitySpecHandle(), GetActivationPredictionKey(),
+					Data, FGameplayTag(), AbilitySystemComponent->ScopedPredictionKey);
+			}
+			else
+			{
+				AbilitySystemComponent->ConsumeClientReplicatedTargetData(GetAbilitySpecHandle(), GetActivationPredictionKey());
+			}
 			
 			if (ShouldBroadcastAbilityTaskDelegates())
 			{
-				ValidData.Broadcast(MutableData);
+				ValidData.Broadcast(Data);
 			}
 		});
 }
@@ -193,14 +201,5 @@ void UDAbilityTask_SweepTrace::TriggerOnSwept(TArray<FHitResult>& HitResults) co
 		TargetDataHandle.Add(new FGameplayAbilityTargetData_SingleTargetHit(HitResult));
 	}
 
-	if (IsPredictingClient())
-	{
-		FScopedPredictionWindow PredictionWindow(AbilitySystemComponent.Get(), true);
-		AbilitySystemComponent->CallServerSetReplicatedTargetData(GetAbilitySpecHandle(), GetActivationPredictionKey(),
-			TargetDataHandle, FGameplayTag(), AbilitySystemComponent->ScopedPredictionKey);
-	}
-	else
-	{
-		AbilitySystemComponent->AbilityTargetDataSetDelegate(GetAbilitySpecHandle(), GetActivationPredictionKey()).Broadcast(TargetDataHandle, FGameplayTag());
-	}
+	AbilitySystemComponent->ConfirmAbilityTargetData(GetAbilitySpecHandle(), GetActivationPredictionKey(), TargetDataHandle, FGameplayTag());
 }

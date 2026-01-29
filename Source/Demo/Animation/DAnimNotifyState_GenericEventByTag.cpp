@@ -31,8 +31,11 @@ void UDAnimNotifyState_GenericEventByTag::NotifyBegin(USkeletalMeshComponent* Me
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid DAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
+	
+	FGameplayEventData EventData;
+	EventData.EventTag = StartEventTag;
 
-	Asc->HandleGameplayEvent(StartEventTag, nullptr);
+	Asc->HandleGameplayEvent(StartEventTag, &EventData);
 }
 
 void UDAnimNotifyState_GenericEventByTag::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
@@ -52,6 +55,9 @@ void UDAnimNotifyState_GenericEventByTag::NotifyEnd(USkeletalMeshComponent* Mesh
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid DAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
+	
+	FGameplayEventData EventData;
+	EventData.EventTag = EndEventTag;
 
-	Asc->HandleGameplayEvent(EndEventTag, nullptr);
+	Asc->HandleGameplayEvent(EndEventTag, &EventData);
 }

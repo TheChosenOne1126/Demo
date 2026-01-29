@@ -19,6 +19,9 @@ public:
 	void AbilityForInputReleased(const FGameplayTag& InputTag);
 
 	void ProcessAbilityInput();
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerHandleGameplayEvent(FGameplayTag EventTag, const FGameplayEventData& Payload);
 
 	template<typename TOwner, typename... VarTypes>
 	void RegisterAttributeValueChange(
@@ -28,8 +31,6 @@ public:
 		VarTypes&&... Vars);
 
 	void UnregisterAllAttributeValuesChange();
-
-	
 
 private:
 	UPROPERTY()

@@ -21,8 +21,6 @@ void UAbilitySlotWidget::NativeConstruct()
 		return;
 	}
 	
-	MessageHandleMap.Emplace(GlobalTags::AbilitySlotInitTag) = MessageSubsystem->RegisterMessage(
-		GlobalTags::AbilitySlotInitTag, this, &ThisClass::OnAbilitySlotInitialized);
 	MessageHandleMap.Emplace(GlobalTags::AbilityUpdateLevelTag) = MessageSubsystem->RegisterMessage(
 		GlobalTags::AbilityUpdateLevelTag, this, &ThisClass::OnAbilityLevelUpdated);
 	MessageHandleMap.Emplace(GlobalTags::AttributeBaseAbilityPointChangedTag) = MessageSubsystem->RegisterMessage(
@@ -76,25 +74,6 @@ FGameplayAbilitySpec* UAbilitySlotWidget::GetAbilitySpecByHandle() const
 	}
 
 	return Asc->FindAbilitySpecFromHandle(AbilitySpecHandle);
-}
-
-void UAbilitySlotWidget::OnAbilitySlotInitialized(const FAbilitySlotData& AbilitySlotData)
-{
-	if (!AbilitySlotData.SlotTags.HasTagExact(AbilitySlotTag))
-	{
-		return;
-	}
-	
-	if (!IsValid(AbilitySlotData.AbilityTexture))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityTexture"), __FUNCTION__));
-		return;
-	}
-
-	AbilitySpecHandle = AbilitySlotData.AbilitySpecHandle;
-
-	AbilityImage->SetBrushFromTexture(AbilitySlotData.AbilityTexture);
-	AbilityLevelText->SetCurrentValue(AbilitySlotData.AbilityLevel);
 }
 
 void UAbilitySlotWidget::OnAbilityLevelUpdated(const FGameplayAbilitySpec& AbilitySpec)

@@ -3,9 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
 #include "PawnDataAsset.generated.h"
 
+class UGameplayEffect;
+class UMontageDataAsset;
 class UInputDataAsset;
 class UAbilityDataAsset;
 class ADCharacter;
@@ -14,7 +17,7 @@ USTRUCT(BlueprintType)
 struct FPawnData
 {
 	GENERATED_BODY()
-
+	
 	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = "false"))
 	TSubclassOf<ADCharacter> PawnClass;
 
@@ -24,8 +27,20 @@ struct FPawnData
 	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = "false"))
 	TObjectPtr<UInputDataAsset> InputDataAsset;
 
+	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = "false"))
+	TObjectPtr<UMontageDataAsset> MontageDataAsset;
+};
+
+USTRUCT(BlueprintType)
+struct FGameplayEffectData
+{
+	GENERATED_BODY()
+	
 	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UAnimMontage> DeadMontage;
+	TSubclassOf<UGameplayEffect> GameplayEffectClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag Tag;
 };
 
 UCLASS()
@@ -35,5 +50,8 @@ class DEMO_API UPawnDataAsset : public UPrimaryDataAsset
 
 public:
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FPawnData> PawnDataArr;
+	TMap<FGameplayTag, FPawnData> PawnDataMap;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FGameplayEffectData> GameplayEffectDataList;
 };

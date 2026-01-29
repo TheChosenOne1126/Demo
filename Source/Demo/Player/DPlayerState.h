@@ -11,7 +11,6 @@
 
 class ADCharacter;
 class UAbilityDataAsset;
-class UBaseAttributeViewModel;
 class UBaseAttributeSet;
 class UDAbilitySystemComponent;
 
@@ -33,9 +32,6 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastShowDamageNumber(float DamageValue, FGameplayTagContainer DamageTags);
-
-	UPROPERTY()
-	TObjectPtr<UBaseAttributeViewModel> BaseAttributeViewModel;
 
 protected:
 	void OnHpAttributeChange(const FOnAttributeChangeData& HpData);

@@ -15,9 +15,6 @@ struct FAbilityData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = "false"))
-	TSubclassOf<UGameplayAbility> AbilityClass;
-
 	UPROPERTY(EditDefaultsOnly)
 	int32 InitialAbilityLevel = 0;
 
@@ -38,7 +35,7 @@ class DEMO_API UAbilityDataAsset : public UDataAsset
 
 public:
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FAbilityData> AbilityDataArr;
+	TMap<TSubclassOf<UGameplayAbility>, FAbilityData> AbilityDataMap;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> InitialEffectClass;

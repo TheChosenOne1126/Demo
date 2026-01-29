@@ -5,20 +5,13 @@
 #include "Statics.h"
 #include "DataAsset/PawnDataAsset.h"
 
-UDAssetManager& UDAssetManager::GetRef()
+UDAssetManager& UDAssetManager::Get()
 {
 	ThisClass* Singleton = Cast<ThisClass>(GEngine->AssetManager);
 
 	checkf(::IsValid(Singleton), TEXT("Invalid DAssetManager"))
 	
 	return *Singleton;
-}
-
-void UDAssetManager::StartInitialLoading()
-{
-	Super::StartInitialLoading();
-
-	LoadPawnData();
 }
 
 UPawnDataAsset* UDAssetManager::GetPawnDataAsset() const
@@ -41,17 +34,12 @@ void UDAssetManager::LoadPawnData()
 		return;
 	}
 
-#if WITH_EDITOR
-	FScopedSlowTask SlowTask(0.f, FText::FromString("Loading Pawn Data Asset"));
-	SlowTask.MakeDialog(false, true);
-	PawnDataAsset = DemoSettings->PawnDataAssetPath.LoadSynchronous();
-	LoadPrimaryAssetsWithType(GetFNameSafe(UPawnDataAsset::StaticClass()));
-#else
-	const TSharedPtr<FStreamableHandle> Handle = LoadPrimaryAssetsWithType(GetFNameSafe(UPawnDataAsset::StaticClass()));
-	if (Handle.IsValid())
-	{
-		Handle->WaitUntilComplete(0.f, false);
-		PawnDataAsset = Handle->GetLoadedAsset<UPawnDataAsset>();
-	}
-#endif
+	const FPrimaryAssetId PawnDataAssetId = GetPrimaryAssetIdForPath(DemoSettings->PawnDataAssetPath.ToSoftObjectPath());
+	
+	PawnDataHandle = LoadPrimaryAsset(PawnDataAssetId, TArray<FName>(), FStreamableDelegate::CreateWeakLambda(
+		this, [this]() -> void
+		{
+			PawnDataAsset = PawnDataHandle.IsValid() ? PawnDataHandle->GetLoadedAsset<UPawnDataAsset>() : nullptr;
+			OnPawnDataLoaded.Broadcast();
+		}));
 }

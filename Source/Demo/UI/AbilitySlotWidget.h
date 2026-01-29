@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <Interface/AbilitySlotInterface.h>
-
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
 #include "GameplayAbilitySpec.h"
@@ -25,8 +23,6 @@ protected:
 	virtual void NativeDestruct() override;
 	
 	FGameplayAbilitySpec* GetAbilitySpecByHandle() const;
-
-	void OnAbilitySlotInitialized(const FAbilitySlotData& AbilitySlotData);
 
 	void OnAbilityLevelUpdated(const FGameplayAbilitySpec& AbilitySpec);
 	
