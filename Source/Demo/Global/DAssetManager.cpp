@@ -43,3 +43,30 @@ void UDAssetManager::LoadPawnData()
 			OnPawnDataLoaded.Broadcast();
 		}));
 }
+
+void UDAssetManager::StartInitialLoading()
+{
+	Super::StartInitialLoading();
+	
+#if WITH_EDITOR
+	if (::IsValid(PawnDataAsset))
+	{
+		return;
+	}
+	
+	const UDemoSettings* DemoSettings = GetDefault<UDemoSettings>();
+	if (!::IsValid(DemoSettings))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Demo Settings"), __FUNCTION__));
+		return;
+	}
+
+	if (DemoSettings->PawnDataAssetPath.IsNull())
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Null Pawn Data Asset Path"), __FUNCTION__));
+		return;
+	}
+	
+	PawnDataAsset = DemoSettings->PawnDataAssetPath.LoadSynchronous();
+#endif
+}

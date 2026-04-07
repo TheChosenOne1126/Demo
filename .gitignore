@@ -77,3 +77,6 @@ DerivedDataCache/*
 
 # Ignore Rider directories
 /Plugins/Developer/RiderLink
+*.props
+Plugins/UnLua/Source/UnLuaDefaultParamCollector/obj
+Plugins/UnLua/Source/UnLuaDefaultParamCollector/bin

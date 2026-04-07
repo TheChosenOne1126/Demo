@@ -29,7 +29,7 @@ public:
 
     FORCEINLINE bool IsValid() const { return Enum.IsValid(); }
 
-    FORCEINLINE const FString& GetName() const { return EnumName; }
+    FORCEINLINE const FString& GetName() const { return EnumPathName; }
 
     template <typename CharType>
     FORCEINLINE int64 GetValue(const CharType* EntryName) const
@@ -76,6 +76,6 @@ public:
 private:
 	TWeakObjectPtr<UEnum> Enum;
 
-    FString EnumName;
+    FString EnumPathName;
     bool bUserDefined;
 };

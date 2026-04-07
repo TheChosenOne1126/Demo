@@ -29,7 +29,6 @@ void FUnLuaEditorCommands::RegisterCommands()
     UI_COMMAND(About, "About", "About this version", EUserInterfaceActionType::Button, FInputChord());
     UI_COMMAND(GenerateIntelliSense, "Generate IntelliSense", "Generate intelliSense files", EUserInterfaceActionType::Button, FInputChord());
     UI_COMMAND(RevealInExplorer, "Reveal in Explorer", "Reveal lua file in explorer", EUserInterfaceActionType::Button, FInputChord());
-    UI_COMMAND(ExportGameplayTags, "Export GameplayTags", "Export GameplayTags file", EUserInterfaceActionType::Button, FInputChord());
 }
 
 #undef LOCTEXT_NAMESPACE

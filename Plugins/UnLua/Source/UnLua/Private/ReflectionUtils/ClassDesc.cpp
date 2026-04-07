@@ -144,7 +144,8 @@ void FClassDesc::Load()
     UnLoad();
 
     FString Name = (ClassName[0] == 'U' || ClassName[0] == 'A' || ClassName[0] == 'F') ? ClassName.RightChop(1) : ClassName;
-    UStruct* Found = FindObject<UStruct>(ANY_PACKAGE, *Name);
+    // UStruct* Found = FindObject<UStruct>(ANY_PACKAGE, *Name);
+	UStruct* Found = FindFirstObject<UStruct>(*Name);
     if (!Found)
         Found = LoadObject<UStruct>(nullptr, *Name);
 

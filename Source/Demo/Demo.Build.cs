@@ -25,7 +25,8 @@ public class Demo : ModuleRules
 			"UMG",
 			"DeveloperSettings",
 			"AIModule",
-			"UnLua"
+			"UnLua",
+			"Lua"
 		});
 	}
 }

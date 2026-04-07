@@ -2,8 +2,9 @@
 
 #include "DCharacter.h"
 #include "DPlayerState.h"
-#include "Component/DAbilitySystemComponent.h"
 #include "Global/Statics.h"
+#include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 UAbilitySystemComponent* ADCharacter::GetAbilitySystemComponent() const
 {
@@ -23,56 +24,22 @@ UAbilitySystemComponent* ADCharacter::GetAbilitySystemComponent() const
 	return Asi->GetAbilitySystemComponent();
 }
 
-void ADCharacter::PossessedBy(AController* NewController)
+void ADCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::PossessedBy(NewController);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	if (!HasAuthority())
-	{
-		return;
-	}
-
-	ADPlayerState* Ps = GetPlayerState<ADPlayerState>();
-	if (!IsValid(Ps))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid DPlayerState"), __FUNCTION__));
-		return;
-	}
-
-	UAbilitySystemComponent* Asc = GetAbilitySystemComponent();
-	if (!IsValid(Asc))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
-		return;
-	}
-	
-	Asc->InitAbilityActorInfo(Ps, this);
-
-	Ps->InitAbilitySystem(this);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, PawnTag, Params);
 }
 
-void ADCharacter::OnRep_PlayerState()
+void ADCharacter::SetPawnTag(const FGameplayTag& NewPawnTag)
 {
-	Super::OnRep_PlayerState();
+	PawnTag = NewPawnTag;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, PawnTag, this);
+}
 
-	UAbilitySystemComponent* Asc = GetAbilitySystemComponent();
-	if (!IsValid(Asc))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
-		return;
-	}
-
-	ADPlayerState* Ps = GetPlayerState<ADPlayerState>();
-	if (!IsValid(Ps))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid DPlayerState"), __FUNCTION__));
-		return;
-	}
-	
-	Asc->InitAbilityActorInfo(Ps, this);
-
-	if (!IsLocallyControlled())
-	{
-		Ps->RegisterAttributes();
-	}
+const FGameplayTag& ADCharacter::GetPawnTag() const
+{
+	return PawnTag;
 }

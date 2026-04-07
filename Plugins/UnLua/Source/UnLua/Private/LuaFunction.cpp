@@ -134,17 +134,29 @@ bool ULuaFunction::Override(UFunction* Function, UClass* Outer, FName NewName)
 void ULuaFunction::RestoreOverrides(UClass* Class)
 {
     auto OrphanedClass = MakeOrphanedClass(Class);
-    auto Current = &Class->Children;
-    while (*Current)
+
+    // 遍历Children链表，只移除ULuaFunction节点，保留原始UFunction节点
+    // 由于Children是TObjectPtr<UField>而Next是UField*，需要分开处理第一个节点
+    UField* Prev = nullptr;
+    UField* Current = Class->Children;
+    while (Current)
     {
-        auto LuaFunction = Cast<ULuaFunction>(*Current);
+        auto LuaFunction = Cast<ULuaFunction>(Current);
         if (!LuaFunction)
         {
-            *Current = Current->Get()->Next;
+            Prev = Current;
+            Current = Current->Next;
             continue;
         }
 
-        *Current = LuaFunction->Next;
+        // 从链表中移除当前ULuaFunction节点
+        if (Prev)
+            Prev->Next = LuaFunction->Next;
+        else
+            Class->Children = LuaFunction->Next;
+
+        UField* Next = LuaFunction->Next;
+
         const auto Overridden = LuaFunction->GetOverridden();
         if (Overridden && Overridden->GetOuter() == Class)
         {
@@ -158,7 +170,14 @@ void ULuaFunction::RestoreOverrides(UClass* Class)
         else
         {
             Class->RemoveFunctionFromFunctionMap(LuaFunction);
+            LuaFunction->Rename(nullptr, OrphanedClass, RenameFlags);
+            FLinkerLoad::InvalidateExport(LuaFunction);
         }
+
+        if (LuaFunction->IsRooted())
+            LuaFunction->RemoveFromRoot();
+
+        Current = Next;
     }
     Class->ClearFunctionMapsCaches();
 }
@@ -176,20 +195,32 @@ void ULuaFunction::SuspendOverrides(UClass* Class)
         SuspendedOverrides.Add(Class, OrphanedClass);
     }
 
-    auto Current = &Class->Children;
-    while (*Current)
+    UField* Prev = nullptr;
+    UField* Current = Class->Children;
+    while (Current)
     {
-        auto LuaFunction = Cast<ULuaFunction>(*Current);
+        auto LuaFunction = Cast<ULuaFunction>(Current);
         if (!LuaFunction)
         {
-            *Current = Current->Get()->Next;
+            Prev = Current;
+            Current = Current->Next;
             continue;
         }
 
-        *Current = LuaFunction->Next;
+        // 从链表中移除当前ULuaFunction节点
+        if (Prev)
+            Prev->Next = LuaFunction->Next;
+        else
+            Class->Children = LuaFunction->Next;
+
+        UField* Next = LuaFunction->Next;
+
         const auto Overridden = LuaFunction->GetOverridden();
         if (!Overridden || Overridden->GetOuter() != Class)
+        {
+            Current = Next;
             continue;
+        }
 
         LuaFunction->Rename(nullptr, OrphanedClass, RenameFlags);
         Overridden->Rename(*Overridden->GetName().LeftChop(OverriddenSuffix.Length()), nullptr, RenameFlags);
@@ -197,6 +228,8 @@ void ULuaFunction::SuspendOverrides(UClass* Class)
         const auto OrphanedNext = OrphanedClass->Children;
         OrphanedClass->Children = LuaFunction;
         LuaFunction->Next = OrphanedNext;
+
+        Current = Next;
     }
 }
 

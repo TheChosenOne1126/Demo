@@ -208,7 +208,7 @@ namespace UnLua
         static int32 Invoke(lua_State *L, const TFunction<RetType(ArgType...)> &Func, TTuple<typename TArgTypeTraits<ArgType>::Type...> &Args, TIndices<N...> ParamIndices)
         {
             int32 Num = 0;
-            typename TRemoveConst<RetType>::Type *RetValPtr = lua_gettop(L) > sizeof...(ArgType) ? UnLua::Get(L, sizeof...(ArgType) + 1, TType<typename TRemoveConst<RetType>::Type*>()) : nullptr;
+            std::remove_const_t<RetType> *RetValPtr = lua_gettop(L) > sizeof...(ArgType) ? UnLua::Get(L, sizeof...(ArgType) + 1, TType<std::remove_const_t<RetType>*>()) : nullptr;
             if (RetValPtr)
             {
                 *RetValPtr = UnLua::Invoke(Func, Args, typename TZeroBasedIndices<sizeof...(ArgType)>::Type());
@@ -1022,6 +1022,18 @@ namespace UnLua
         FExportedClassBase::GlueFunctions.Add(new FGlueFunction(InName, InFunc));
     }
 
+	//------------------------------------------------------------------
+	// From IsTriviallyDestructible.h
+
+	/**
+	 * Traits class which tests if a type has a trivial destructor.
+	 */
+	template <typename T>
+	struct TIsTriviallyDestructible
+    {
+    	enum { Value = std::is_trivially_destructible_v<T> };
+    };
+	
     template <bool bIsReflected, typename ClassType, typename... CtorArgType>
     void TExportedClass<bIsReflected, ClassType, CtorArgType...>::AddDefaultFunctions(FFalse NotReflected)
     {

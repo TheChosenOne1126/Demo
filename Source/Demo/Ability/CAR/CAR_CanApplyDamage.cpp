@@ -26,20 +26,20 @@ bool UCAR_CanApplyDamage::CanApplyGameplayEffect_Implementation(
 		return false;
 	}
 
-	const float Evasion = Asc->GetNumericAttribute(UBaseAttributeSet::GetEvasionAttribute());
-	if (FMath::RandRange(0.f, 1.f) > Evasion)
-	{
-		ADPlayerState* Ps = Cast<ADPlayerState>(Asc->GetOwnerActor());
-		if (!IsValid(Ps))
-		{
-			Ps->NetMulticastShowDamageNumber(0.f, FGameplayTagContainer(GlobalTags::EffectDamageMissTag));
-		}
-		else
-		{
-			UStatics::Log(GameplayEffect, ELogType::Error, FString::Printf(TEXT("%hs: invalid ADPlayerState"), __FUNCTION__));
-		}
-		return true;
-	}
+	// const float Evasion = Asc->GetNumericAttribute(UBaseAttributeSet::GetEvasionAttribute());
+	// if (FMath::RandRange(0.f, 1.f) > Evasion)
+	// {
+	// 	ADPlayerState* Ps = Cast<ADPlayerState>(Asc->GetOwnerActor());
+	// 	if (!IsValid(Ps))
+	// 	{
+	// 		Ps->NetMulticastShowDamageNumber(0.f, FGameplayTagContainer(GlobalTags::EffectDamageMissTag));
+	// 	}
+	// 	else
+	// 	{
+	// 		UStatics::Log(GameplayEffect, ELogType::Error, FString::Printf(TEXT("%hs: invalid ADPlayerState"), __FUNCTION__));
+	// 	}
+	// 	return true;
+	// }
 
 	return false;
 }

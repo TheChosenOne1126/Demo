@@ -41,7 +41,7 @@ namespace UnLua
         template<class T1, class T2>
         static int32 Identical(...);
     };
-    template<typename T1, typename T2 = T1> struct THasEqualityOperator { enum { Value = TIsSame<decltype(FHasEqualityOperatorImpl::Identical<T1, T2>(nullptr)), bool>::Value }; };
+    template<typename T1, typename T2 = T1> struct THasEqualityOperator { enum { Value = std::is_same_v<decltype(FHasEqualityOperatorImpl::Identical<T1, T2>(nullptr)), bool> }; };
 
 
     /**
@@ -83,7 +83,7 @@ namespace UnLua
     template <typename T> struct TArgTypeTraits
     {
         typedef typename TDecay<T>::Type RT;
-        typedef typename TChooseClass<TIsPrimitiveTypeOrPointer<RT>::Value, RT, typename TRemoveCV<T>::Type>::Result Type;
+        typedef typename TChooseClass<TIsPrimitiveTypeOrPointer<RT>::Value, RT, std::remove_cv_t<T>>::Result Type;
     };
     
     

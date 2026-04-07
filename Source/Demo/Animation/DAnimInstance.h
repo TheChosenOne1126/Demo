@@ -16,15 +16,6 @@ public:
 	void InitializeTagsByAbilitySystem(UAbilitySystemComponent* Asc);
 
 protected:
-	UFUNCTION(BlueprintCallable, Category = "DAnimation", meta = (BlueprintThreadSafe))
-	void UpdateForwardAndSpeed();
-	
 	UPROPERTY(EditDefaultsOnly, Category = "Tag")
 	FGameplayTagBlueprintPropertyMap TagPropertyMap;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Speed")
-	float ForwardSpeed = 0.f;
-	
-	UPROPERTY(BlueprintReadOnly, Category = "Speed")
-	float RightSpeed = 0.f;
 };

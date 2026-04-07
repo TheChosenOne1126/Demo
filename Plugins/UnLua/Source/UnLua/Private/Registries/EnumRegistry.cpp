@@ -65,7 +65,8 @@ namespace UnLua
             return Ret;
 
         const FString EnumName = UTF8_TO_TCHAR(MetatableName);
-        UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, *EnumName);
+        // UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, *EnumName);
+    	UEnum* Enum = FindFirstObject<UEnum>(*EnumName);
         if (!Enum)
         {
             Enum = LoadObject<UEnum>(nullptr, *EnumName);

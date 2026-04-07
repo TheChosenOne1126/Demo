@@ -1,5 +1,6 @@
+local Utils = require("Utils")
 UnLua.ConsoleCommand.Add("unlua.test", "this is a test command", function(Args)
-    print("unlua.test executed Args=", table.unpack(Args))
+    Utils.LogError(string.format("unlua.test executed Args=%s", table.concat(Args, ", ")))
 end)
 
 -- UnLua.ConsoleCommand.Remove("unlua.test")

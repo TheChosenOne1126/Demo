@@ -99,5 +99,31 @@ public class UnLua : ModuleRules
 
         var withHotReload = hotReloadMode != "Never";
         PublicDefinitions.Add("UNLUA_WITH_HOT_RELOAD=" + (withHotReload ? "1" : "0"));
+
+        // Touch a trigger stamp file so that UBT's AreExternalDependenciesOutOfDate() detects
+        // the change and re-runs UHT, which regenerates DefaultParamCollection.inl via
+        // UnLuaDefaultParamExporter every build.
+        TouchDefaultParamTrigger();
+    }
+
+    private void TouchDefaultParamTrigger()
+    {
+        try
+        {
+            // The stamp file is placed in the UHT output directory for the UnLua module.
+            // This path must match the one registered by UnLuaDefaultParamExporter.cs via AddExternalDependency.
+            var intermediateDir = Path.Combine(PluginDirectory, "Intermediate", "Build",
+                Target.Platform.ToString(), "UnrealEditor", "Inc", "UnLua", "UHT");
+            if (!Directory.Exists(intermediateDir))
+                Directory.CreateDirectory(intermediateDir);
+
+            var stampFile = Path.Combine(intermediateDir, "UnLuaDefaultParamTrigger.stamp");
+            File.WriteAllText(stampFile, DateTime.UtcNow.Ticks.ToString());
+        }
+        catch (Exception)
+        {
+            // Silently ignore - first build may not have the directory yet.
+            // UHT will run anyway if the Timestamp file doesn't exist.
+        }
     }
 }

@@ -16,11 +16,14 @@ class DEMO_API UDAssetManager : public UAssetManager
 public:
 	static UDAssetManager& Get();
 	
+	UFUNCTION()
 	UPawnDataAsset* GetPawnDataAsset() const;
 	
 	FSimpleMulticastDelegate OnPawnDataLoaded;
 
 	void LoadPawnData();
+	
+	virtual void StartInitialLoading() override;
 
 private:
 	UPROPERTY(Transient)

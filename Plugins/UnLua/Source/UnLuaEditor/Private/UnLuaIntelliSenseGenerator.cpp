@@ -52,8 +52,8 @@ void FUnLuaIntelliSenseGenerator::UpdateAll()
     const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
 
     FARFilter Filter;
-    Filter.ClassNames.Add(UBlueprint::StaticClass()->GetFName());
-    Filter.ClassNames.Add(UWidgetBlueprint::StaticClass()->GetFName());
+    Filter.ClassPaths.Add(UBlueprint::StaticClass()->GetClassPathName());
+    Filter.ClassPaths.Add(UWidgetBlueprint::StaticClass()->GetClassPathName());
 
     TArray<FAssetData> BlueprintAssets;
     TArray<const UField*> NativeTypes;
@@ -95,8 +95,8 @@ void FUnLuaIntelliSenseGenerator::UpdateAll()
 
 bool FUnLuaIntelliSenseGenerator::IsBlueprint(const FAssetData& AssetData)
 {
-    const FName AssetClass = AssetData.AssetClass;
-    return AssetClass == UBlueprint::StaticClass()->GetFName() || AssetClass == UWidgetBlueprint::StaticClass()->GetFName();
+    const FTopLevelAssetPath AssetClass = AssetData.AssetClassPath;
+    return AssetClass == UBlueprint::StaticClass()->GetClassPathName() || AssetClass == UWidgetBlueprint::StaticClass()->GetClassPathName();
 }
 
 bool FUnLuaIntelliSenseGenerator::ShouldExport(const FAssetData& AssetData, bool bLoad)
@@ -265,7 +265,7 @@ void FUnLuaIntelliSenseGenerator::OnAssetUpdated(const FAssetData& AssetData)
     if (!ShouldExport(AssetData, true))
         return;
 
-    UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *AssetData.ObjectPath.ToString());
+    UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *AssetData.GetObjectPathString());
     if (!Blueprint)
         return;
 

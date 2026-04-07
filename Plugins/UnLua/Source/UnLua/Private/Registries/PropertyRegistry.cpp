@@ -12,8 +12,8 @@ namespace UnLua
     FPropertyRegistry::FPropertyRegistry(FLuaEnv* Env)
         : Env(Env)
     {
-        PropertyCollector = FindObject<UScriptStruct>(ANY_PACKAGE, TEXT("PropertyCollector"));
-        check(PropertyCollector);
+        PropertyCollector = FindObject<UScriptStruct>(nullptr, TEXT("/Script/UnLua.PropertyCollector"));
+    	check(PropertyCollector);
     }
 
     void FPropertyRegistry::NotifyUObjectDeleted(UObject* Object)
@@ -307,7 +307,7 @@ namespace UnLua
             };
             const auto StructProperty = new FStructProperty(PropertyCollector, Params);
             StructProperty->Struct = ScriptStruct;
-            StructProperty->ElementSize = ScriptStruct->PropertiesSize;
+            StructProperty->SetElementSize(ScriptStruct->PropertiesSize);
             Property = StructProperty;
 #endif
         }
@@ -318,7 +318,7 @@ namespace UnLua
             const auto UnderlyingProperty = new FByteProperty(EnumProperty, TEXT("UnderlyingType"), RF_Transient);
             Property = EnumProperty;
             Property->AddCppProperty(UnderlyingProperty);
-            Property->ElementSize = UnderlyingProperty->ElementSize;
+            Property->SetElementSize(UnderlyingProperty->GetElementSize());
             Property->PropertyFlags |= CPF_IsPlainOldData | CPF_NoDestructor | CPF_ZeroConstructor;
         }
         else

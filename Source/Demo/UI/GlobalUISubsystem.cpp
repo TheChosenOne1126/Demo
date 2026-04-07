@@ -13,13 +13,11 @@ void UGlobalUISubsystem::SetUpLoadingScreenWidget(TSubclassOf<UUserWidget> Loadi
 		return;
 	}
 
-	if (!LoadingScreenWidgetClass->ImplementsInterface(UWidgetInterface::StaticClass()))
+	int32 ZOrder = 0;
+	if (LoadingScreenWidgetClass->ImplementsInterface(UWidgetInterface::StaticClass()))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: LoadingScreenWidgetClass no implement UWidgetInterface"), __FUNCTION__));
-		return;
+		ZOrder = static_cast<int32>(IWidgetInterface::Execute_GetZOrder(LoadingScreenWidgetClass));
 	}
-	
-	const int32 ZOrder = static_cast<int32>(IWidgetInterface::Execute_GetZOrder(LoadingScreenWidgetClass));
 	
 	ULocalPlayer* LocalPlayer = GetLocalPlayer();
 	if (!IsValid(LocalPlayer))
@@ -82,4 +80,81 @@ void UGlobalUISubsystem::CloseLoadingScreenWidget()
 	
 	ViewportClient->RemoveViewportWidgetForPlayer(LocalPlayer, LoadingScreenWidget.ToSharedRef());
 	LoadingScreenWidget.Reset();
+}
+
+UUserWidget* UGlobalUISubsystem::CreateUIWidget(TSubclassOf<UUserWidget> WidgetClass) const
+{
+	ULocalPlayer* LocalPlayer = GetLocalPlayer();
+	if (!IsValid(LocalPlayer))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid LocalPlayer"), __FUNCTION__));
+		return nullptr;
+	}
+	
+	UGameViewportClient* ViewportClient = LocalPlayer->ViewportClient.Get();
+	if (!IsValid(ViewportClient))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid ViewportClient"), __FUNCTION__));
+		return nullptr;
+	}
+	
+	if (!IsValid(WidgetClass))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid WidgetClass"), __FUNCTION__));
+		return nullptr;
+	}
+
+	int32 ZOrder = 0;
+	if (WidgetClass->ImplementsInterface(UWidgetInterface::StaticClass()))
+	{
+		ZOrder = static_cast<int32>(IWidgetInterface::Execute_GetZOrder(WidgetClass));
+	}
+	
+	UGameInstance* GameInstance = LocalPlayer->GetGameInstance();
+	if (!IsValid(GameInstance))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid GameInstance"), __FUNCTION__));
+		return nullptr;
+	}
+	
+	UUserWidget* Widget = UUserWidget::CreateWidgetInstance(*GameInstance, WidgetClass, TEXT("LoadingScreenWidget"));
+	if (!IsValid(Widget))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid LoadingScreenWidget"), __FUNCTION__));
+		return nullptr;
+	}
+	
+	ViewportClient->AddViewportWidgetForPlayer(LocalPlayer, Widget->TakeWidget(), ZOrder);
+	return Widget;
+}
+
+void UGlobalUISubsystem::CloseUIWidget(UUserWidget* Widget) const
+{
+	if (!IsValid(Widget))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Widget"), __FUNCTION__));
+		return;
+	}
+	
+	ULocalPlayer* LocalPlayer = GetLocalPlayer();
+	if (!IsValid(LocalPlayer))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid LocalPlayer"), __FUNCTION__));
+		return;
+	}
+	
+	UGameViewportClient* ViewportClient = LocalPlayer->ViewportClient.Get();
+	if (!IsValid(ViewportClient))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid ViewportClient"), __FUNCTION__));
+		return;
+	}
+
+	if (!LoadingScreenWidget.IsValid())
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid LoadingScreenWidget"), __FUNCTION__));
+		return;
+	}
+	
+	ViewportClient->RemoveViewportWidgetForPlayer(LocalPlayer, Widget->TakeWidget());
 }

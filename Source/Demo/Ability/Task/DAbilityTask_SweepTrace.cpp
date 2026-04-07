@@ -138,6 +138,10 @@ void UDAbilityTask_SweepTrace::Activate()
 		}
 
 		SweptComponent = UStatics::FindSweptComponent(GetAvatarActor());
+		if (!SweptComponent.IsValid())
+		{
+			return;
+		}
 
 		QueryParams.IgnoreMask = SweptComponent->GetMoveIgnoreMask();
 		QueryParams.bTraceComplex = SweptComponent->bTraceComplexOnMove;

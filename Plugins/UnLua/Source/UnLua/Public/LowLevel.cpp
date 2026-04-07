@@ -59,6 +59,7 @@ namespace UnLua
             if (UNLIKELY(Object->IsA<UEnum>()))
             {
                 return Object->IsNative() ? Object->GetName() : Object->GetPathName();
+                // return Object->GetPathName();
             }
 
             const UStruct* Struct = Cast<UStruct>(Object);

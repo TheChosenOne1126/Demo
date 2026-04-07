@@ -11,7 +11,7 @@ namespace GlobalTags
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityActivationAutoTag, "Ability.Activation.Auto", "Ability Activation Auto(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityUpdateLevelTag, "Ability.UpdateLevel", "Ability Update Level(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilitySlotInitTag, "Ability.Slot.Init", "Ability Slot Initialized(Native)")
-	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilitySystemInitTag, "Ability.SystemInit", "Ability System is already Initialized(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityGivenTag, "Ability.Given", "All initial Abilities Given (Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilitySlotTag, "Ability.Slot", "Ability Slot Parent Tag(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityUltimateTag, "Ability.Ultimate", "Ability type is ultimate(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AbilityInputPressTag, "Ability.Input.Press", "Ability input press(Native)")
@@ -38,4 +38,5 @@ namespace GlobalTags
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(AttributeUltimateAbilityPointChangedTag, "Attribute.UltimateAbilityPointChanged", "Ultimate Ability Point Changed(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EffectDamageNormalAttackTag, "Effect.Damage.NormalAttack", "Pawn is damaged by normally attack(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EffectDamageMissTag, "Effect.Damage.Miss", "Pawn is missed by one damage")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(EffectCoolDownTag, "Effect.CoolDown", "Cooldown GameplayEffect(Native)")
 }

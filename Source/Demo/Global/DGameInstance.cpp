@@ -27,3 +27,8 @@ void UDGameInstance::Init()
 		LoadingScreenClass = DemoSettings->LoadingScreenWidgetClassPath.LoadSynchronous();
 	}
 }
+
+FString UDGameInstance::GetModuleName_Implementation() const
+{
+	return TEXT("GameInstance");
+}

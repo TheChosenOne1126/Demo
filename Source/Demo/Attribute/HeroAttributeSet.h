@@ -18,16 +18,9 @@ public:
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 
 	ATTRIBUTE_ACCESSORS(ThisClass, Xp)
-	ATTRIBUTE_ACCESSORS(ThisClass, Strength)
-	ATTRIBUTE_ACCESSORS(ThisClass, ExtraStrength)
-	ATTRIBUTE_ACCESSORS(ThisClass, Intelligence)
-	ATTRIBUTE_ACCESSORS(ThisClass, ExtraIntelligence)
-	ATTRIBUTE_ACCESSORS(ThisClass, Agility)
-	ATTRIBUTE_ACCESSORS(ThisClass, ExtraAgility)
 	ATTRIBUTE_ACCESSORS(ThisClass, BaseSp)
 	ATTRIBUTE_ACCESSORS(ThisClass, UltimateSp)
 	ATTRIBUTE_ACCESSORS(ThisClass, MaxSp)
-	ATTRIBUTE_ACCESSORS(ThisClass, DamageReduction)
 
 protected:
 	UFUNCTION()

@@ -37,5 +37,4 @@ public:
     TSharedPtr<FUICommandInfo> About;
     TSharedPtr<FUICommandInfo> GenerateIntelliSense;
     TSharedPtr<FUICommandInfo> RevealInExplorer;
-    TSharedPtr<FUICommandInfo> ExportGameplayTags;
 };

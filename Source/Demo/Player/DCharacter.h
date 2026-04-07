@@ -8,10 +8,6 @@
 #include "GameFramework/Character.h"
 #include "DCharacter.generated.h"
 
-class UDAbilitySystemComponent;
-class UAbilityDataAsset;
-class UInputDataAsset;
-
 UCLASS(Abstract)
 class DEMO_API ADCharacter : public ACharacter, public IAbilitySystemInterface
 {
@@ -20,15 +16,13 @@ class DEMO_API ADCharacter : public ACharacter, public IAbilitySystemInterface
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
-	virtual void PossessedBy(AController* NewController) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void OnRep_PlayerState() override;
+	void SetPawnTag(const FGameplayTag& NewPawnTag);
 	
-	void SetPawnTag(const FGameplayTag& NewPawnTag) { PawnTag = NewPawnTag; }
-	
-	const FGameplayTag& GetPawnTag() const { return PawnTag; }
+	const FGameplayTag& GetPawnTag() const;
 	
 protected:
-	UPROPERTY(Transient)
+	UPROPERTY(Replicated)
 	FGameplayTag PawnTag;
 };

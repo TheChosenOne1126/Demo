@@ -4,60 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "AttributeSet.h"
-#include "GameplayEffectTypes.h"
+#include "UnLuaInterface.h"
 #include "GameFramework/PlayerState.h"
 #include "DPlayerState.generated.h"
 
-class ADCharacter;
-class UAbilityDataAsset;
-class UBaseAttributeSet;
 class UDAbilitySystemComponent;
 
 UCLASS()
-class DEMO_API ADPlayerState : public APlayerState, public IAbilitySystemInterface
+class DEMO_API ADPlayerState : public APlayerState, public IAbilitySystemInterface, public IUnLuaInterface
 {
 	GENERATED_BODY()
 
 public:
 	ADPlayerState();
-
-	virtual void PostUnregisterAllComponents() override;
-
+	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
-	virtual void InitAbilitySystem(ADCharacter* Character);
-
-	virtual void RegisterAttributes();
+	
+	virtual FString GetModuleName_Implementation() const override;
 
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastShowDamageNumber(float DamageValue, FGameplayTagContainer DamageTags);
 
 protected:
-	void OnHpAttributeChange(const FOnAttributeChangeData& HpData);
-	
-	void OnMaxHpAttributeChange(const FOnAttributeChangeData& MaxHpData);
-
-	void OnHpRegenAttributeChange(const FOnAttributeChangeData& HpRegenData);
-
-	void OnMpAttributeChange(const FOnAttributeChangeData& MpData);
-
-	void OnMaxMpAttributeChange(const FOnAttributeChangeData& MaxMpData);
-
-	void OnMpRegenAttributeChange(const FOnAttributeChangeData& MpRegenData);
-
-	void OnLvAttributeChange(const FOnAttributeChangeData& LvData);
-	
-	void OnDamageAttributeChange(const FOnAttributeChangeData& DamageData, bool bIsExtra);
-
-	void OnArmorAttributeChange(const FOnAttributeChangeData& ArmorData, bool bIsExtra);
-
-	void OnMagicResistAttributeChange(const FOnAttributeChangeData& MagicResistData, bool bIsExtra);
-
-	void OnAttackSpeedAttributeChange(const FOnAttributeChangeData& AttackSpeedData) const;
-
-	TMap<FGameplayAttribute, FDelegateHandle> AttributeChangeHandleMap;
-
 	UPROPERTY()
 	TObjectPtr<UDAbilitySystemComponent> Asc;
 };

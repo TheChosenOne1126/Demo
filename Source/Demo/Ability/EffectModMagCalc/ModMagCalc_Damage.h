@@ -6,7 +6,7 @@
 #include "GameplayModMagnitudeCalculation.h"
 #include "ModMagCalc_Damage.generated.h"
 
-UCLASS(Abstract)
+UCLASS()
 class DEMO_API UModMagCalc_Damage : public UGameplayModMagnitudeCalculation
 {
 	GENERATED_BODY()
@@ -15,27 +15,12 @@ public:
 	UModMagCalc_Damage();
 
 protected:
-	float GetDamageAttributeValue(const FGameplayEffectSpec& Spec, const FAggregatorEvaluateParameters& EvaluationParams) const;
-
-	float GetFixedDamageValue(const FGameplayEffectSpec& Spec, const FAggregatorEvaluateParameters& EvaluationParams) const;
-
-	float GetPerHpDamageValue(const FGameplayEffectSpec& Spec, const FAggregatorEvaluateParameters& EvaluationParams) const;
-
+	virtual float CalculateBaseMagnitude_Implementation(const FGameplayEffectSpec& Spec) const override;
+	
 private:
-	float GetDamageReductionAttributeValue(const FGameplayEffectSpec& Spec, const FAggregatorEvaluateParameters& EvaluationParams) const;
-
 	UPROPERTY()
 	FGameplayEffectAttributeCaptureDefinition DamageCaptureDef;
-	
-	UPROPERTY()
-	FGameplayEffectAttributeCaptureDefinition ExtraDamageCaptureDef;
-
-	UPROPERTY()
-	FGameplayEffectAttributeCaptureDefinition DamageReductionCaptureDef;
 
 	UPROPERTY()
 	FGameplayEffectAttributeCaptureDefinition HpCaptureDef;
-	
-	UPROPERTY()
-	FGameplayEffectAttributeCaptureDefinition MaxHpCaptureDef;
 };

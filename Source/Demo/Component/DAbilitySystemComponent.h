@@ -4,62 +4,32 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "UnLuaInterface.h"
 #include "DAbilitySystemComponent.generated.h"
 
+struct FAbilityData;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegatePlayerControllerSet, APlayerController*, PlayerController);
+
 UCLASS()
-class DEMO_API UDAbilitySystemComponent : public UAbilitySystemComponent
+class DEMO_API UDAbilitySystemComponent : public UAbilitySystemComponent, public IUnLuaInterface
 {
 	GENERATED_BODY()
 
 public:
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
-
-	void AbilityForInputPressed(const FGameplayTag& InputTag);
-
-	void AbilityForInputReleased(const FGameplayTag& InputTag);
-
-	void ProcessAbilityInput();
 	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerHandleGameplayEvent(FGameplayTag EventTag, const FGameplayEventData& Payload);
-
-	template<typename TOwner, typename... VarTypes>
-	void RegisterAttributeValueChange(
-		const FGameplayAttribute& Attribute,
-		TOwner* Owner,
-		void(TOwner::* Callback)(const FOnAttributeChangeData&, VarTypes...),
-		VarTypes&&... Vars);
-
-	void UnregisterAllAttributeValuesChange();
-
-private:
+	virtual void DestroyActiveState() override;
+	
+	virtual FString GetModuleName_Implementation() const override;
+	
+	virtual void OnPlayerControllerSet() override;
+	
+	UFUNCTION()
+	void GiveAbilityWithData(TSubclassOf<UGameplayAbility> AbilityClass, const FAbilityData& Data);
+	
 	UPROPERTY()
-	TArray<FGameplayAbilitySpecHandle> InputPressedHandles;
-
-	UPROPERTY()
-	TArray<FGameplayAbilitySpecHandle> InputHeldHandles;
-
-	UPROPERTY()
-	TArray<FGameplayAbilitySpecHandle> InputReleasedHandles;
-
-	TMap<FGameplayAttribute, FDelegateHandle> AttributeValueChangeDelegateMap;
+	FDelegatePlayerControllerSet PlayerControllerSet;
 };
-
-template <typename TOwner, typename ... VarTypes>
-void UDAbilitySystemComponent::RegisterAttributeValueChange(
-	const FGameplayAttribute& Attribute,
-	TOwner* Owner,
-	void(TOwner::* Callback)(const FOnAttributeChangeData&, VarTypes...),
-	VarTypes&&... Vars)
-{
-	if (AttributeValueChangeDelegateMap.Contains(Attribute))
-	{
-		return;
-	}
-	
-	AttributeValueChangeDelegateMap.Emplace(Attribute) = GetGameplayAttributeValueChangeDelegate(Attribute)
-		.AddUObject(Owner, Callback, Forward<VarTypes>(Vars)...);
-}
 
 #define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \
 	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(ClassName, PropertyName) \

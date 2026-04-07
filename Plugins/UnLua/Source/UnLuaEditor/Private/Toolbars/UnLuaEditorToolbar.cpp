@@ -147,12 +147,12 @@ void FUnLuaEditorToolbar::BindToLua_Executed() const
 
     if (TargetClass->ImplementsInterface(UUnLuaInterface::StaticClass()))
         return;
-
-    const auto Ok = FBlueprintEditorUtils::ImplementNewInterface(Blueprint, FName("UnLuaInterface"));
+	
+    const auto Ok = FBlueprintEditorUtils::ImplementNewInterface(Blueprint, UClass::TryConvertShortTypeNameToPathName<UStruct>(TEXT("UnLuaInterface")));
     if (!Ok)
         return;
 
-    const auto Package = Blueprint->GetTypedOuter(UPackage::StaticClass());
+    const auto Package = Blueprint->GetPackage();
     const auto InterfaceDesc = *Blueprint->ImplementedInterfaces.FindByPredicate([](const FBPInterfaceDescription& Desc)
     {
         return Desc.Interface == UUnLuaInterface::StaticClass();
@@ -218,7 +218,7 @@ void FUnLuaEditorToolbar::UnbindFromLua_Executed() const
     if (!TargetClass->ImplementsInterface(UUnLuaInterface::StaticClass()))
         return;
 
-    FBlueprintEditorUtils::RemoveInterface(Blueprint, FName("UnLuaInterface"));
+    FBlueprintEditorUtils::RemoveInterface(Blueprint, UClass::TryConvertShortTypeNameToPathName<UStruct>(TEXT("UnLuaInterface")));
 
 #if ENGINE_MAJOR_VERSION > 4 || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 26)
 

@@ -226,8 +226,9 @@ namespace UnLua
         if (ClassNamePtr)
         {
             FString ClassName(ClassNamePtr);
-            UStruct *Struct = FindObject<UStruct>(ANY_PACKAGE, *ClassName + 1);
-            if (Struct)
+            // UStruct *Struct = FindObject<UStruct>(ANY_PACKAGE, *ClassName + 1);
+            UStruct *Struct = FindFirstObject<UStruct>(*ClassName + 1);
+        	if (Struct)
             {
                 // the userdata is a struct instance
                 UObjectBaseUtility *ContainerObject = GetContainerObject(Struct, ContainerPtr);

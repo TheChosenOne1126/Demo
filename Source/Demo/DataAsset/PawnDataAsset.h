@@ -53,5 +53,8 @@ public:
 	TMap<FGameplayTag, FPawnData> PawnDataMap;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FGameplayEffectData> GameplayEffectDataList;
+	TMap<FGameplayTag, TSubclassOf<UGameplayEffect>> GameplayEffectMap;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FGameplayTag, TSubclassOf<UCameraModifier>> CameraModifierMap;
 };

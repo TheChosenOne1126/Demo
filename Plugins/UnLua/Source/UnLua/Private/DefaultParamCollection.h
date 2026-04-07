@@ -53,7 +53,7 @@ public:
     {
         if (!bInitialized)
         {
-            UEnum* Enum = FindObjectChecked<UEnum>(ANY_PACKAGE, *TypeName);
+            UEnum* Enum = FindObjectChecked<UEnum>(nullptr, *TypeName);
             Value = Enum->GetValueByIndex(Index);
             bInitialized = true;
         }

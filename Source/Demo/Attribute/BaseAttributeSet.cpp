@@ -7,22 +7,19 @@ void UBaseAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, Hp, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, MaxHp, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, HpRegen, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, Mp, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, MaxMp, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, MpRegen, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, Lv, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, MaxLv, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, Damage, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, ExtraDamage, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, Armor, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, ExtraArmor, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, MagicResist, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, ExtraMagicResist, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, Evasion, COND_None, REPNOTIFY_Always)
-	DOREPLIFETIME_CONDITION_NOTIFY(ThisClass, AttackSpeed, COND_None, REPNOTIFY_Always)
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Hp, Params);
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, MaxHp, Params)
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, HpRegen, Params)
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Mp, Params)
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, MaxMp, Params)
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, MpRegen, Params)
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Lv, Params)
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, MaxLv, Params)
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Damage, Params)
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, Armor, Params)
+	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, AttackSpeed, Params)
 }
 
 void UBaseAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -89,34 +86,9 @@ void UBaseAttributeSet::OnRep_Damage(const FGameplayAttributeData& OldDamage) co
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ThisClass, Damage, OldDamage)
 }
 
-void UBaseAttributeSet::OnRep_ExtraDamage(const FGameplayAttributeData& OldExtraDamage) const
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(ThisClass, ExtraDamage, OldExtraDamage)
-}
-
 void UBaseAttributeSet::OnRep_Armor(const FGameplayAttributeData& OldArmor) const
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(ThisClass, Armor, OldArmor)
-}
-
-void UBaseAttributeSet::OnRep_ExtraArmor(const FGameplayAttributeData& OldExtraArmor) const
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(ThisClass, ExtraArmor, OldExtraArmor)
-}
-
-void UBaseAttributeSet::OnRep_MagicResist(const FGameplayAttributeData& OldMagicResist) const
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(ThisClass, MagicResist, OldMagicResist)
-}
-
-void UBaseAttributeSet::OnRep_ExtraMagicResist(const FGameplayAttributeData& OldExtraMagicResist) const
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(ThisClass, ExtraMagicResist, OldExtraMagicResist)	
-}
-
-void UBaseAttributeSet::OnRep_Evasion(const FGameplayAttributeData& OldEvasion) const
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(ThisClass, Evasion, OldEvasion)
 }
 
 void UBaseAttributeSet::OnRep_AttackSpeed(const FGameplayAttributeData& OldAttackSpeed) const

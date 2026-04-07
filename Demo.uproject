@@ -8,6 +8,11 @@
 			"Name": "Demo",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "DemoEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit"
 		}
 	],
 	"Plugins": [
@@ -27,11 +32,11 @@
 			"Enabled": true
 		},
 		{
-			"Name": "PoseSearch",
+			"Name": "UnLua",
 			"Enabled": true
 		},
 		{
-			"Name": "UnLua",
+			"Name": "MotionWarping",
 			"Enabled": true
 		}
 	]

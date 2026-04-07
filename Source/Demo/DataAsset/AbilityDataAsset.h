@@ -34,7 +34,7 @@ class DEMO_API UAbilityDataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly)
+ 	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = false))
 	TMap<TSubclassOf<UGameplayAbility>, FAbilityData> AbilityDataMap;
 
 	UPROPERTY(EditDefaultsOnly)

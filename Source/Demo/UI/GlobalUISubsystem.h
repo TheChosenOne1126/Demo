@@ -21,6 +21,12 @@ public:
 	UFUNCTION(BlueprintCosmetic)
 	void CloseLoadingScreenWidget();
 	
+	UFUNCTION(BlueprintCosmetic)
+	UUserWidget* CreateUIWidget(TSubclassOf<UUserWidget> WidgetClass) const;
+	
+	UFUNCTION(BlueprintCosmetic)
+	void CloseUIWidget(UUserWidget* Widget) const;
+	
 private:
 	TSharedPtr<SWidget> LoadingScreenWidget;
 };

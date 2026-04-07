@@ -26,12 +26,7 @@ public:
 	ATTRIBUTE_ACCESSORS(ThisClass, Lv)
 	ATTRIBUTE_ACCESSORS(ThisClass, MaxLv)
 	ATTRIBUTE_ACCESSORS(ThisClass, Damage)
-	ATTRIBUTE_ACCESSORS(ThisClass, ExtraDamage)
 	ATTRIBUTE_ACCESSORS(ThisClass, Armor)
-	ATTRIBUTE_ACCESSORS(ThisClass, ExtraArmor)
-	ATTRIBUTE_ACCESSORS(ThisClass, MagicResist)
-	ATTRIBUTE_ACCESSORS(ThisClass, ExtraMagicResist)
-	ATTRIBUTE_ACCESSORS(ThisClass, Evasion)
 	ATTRIBUTE_ACCESSORS(ThisClass, AttackSpeed)
 
 protected:
@@ -61,24 +56,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_Damage(const FGameplayAttributeData& OldDamage) const;
-	
-	UFUNCTION()
-	void OnRep_ExtraDamage(const FGameplayAttributeData& OldExtraDamage) const;
 
 	UFUNCTION()
 	void OnRep_Armor(const FGameplayAttributeData& OldArmor) const;
-
-	UFUNCTION()
-	void OnRep_ExtraArmor(const FGameplayAttributeData& OldExtraArmor) const;
-
-	UFUNCTION()
-	void OnRep_MagicResist(const FGameplayAttributeData& OldMagicResist) const;
-
-	UFUNCTION()
-	void OnRep_ExtraMagicResist(const FGameplayAttributeData& OldExtraMagicResist) const;
-
-	UFUNCTION()
-	void OnRep_Evasion(const FGameplayAttributeData& OldEvasion) const;
 
 	UFUNCTION()
 	void OnRep_AttackSpeed(const FGameplayAttributeData& OldAttackSpeed) const;
@@ -111,23 +91,8 @@ private:
 	UPROPERTY(REplicatedUsing = OnRep_Damage)
 	FGameplayAttributeData Damage;
 
-	UPROPERTY(REplicatedUsing = OnRep_ExtraDamage)
-	FGameplayAttributeData ExtraDamage;
-
 	UPROPERTY(ReplicatedUsing = OnRep_Armor)
 	FGameplayAttributeData Armor;
-
-	UPROPERTY(ReplicatedUsing = OnRep_ExtraArmor)
-	FGameplayAttributeData ExtraArmor;
-
-	UPROPERTY(ReplicatedUsing = OnRep_MagicResist)
-	FGameplayAttributeData MagicResist;
-	
-	UPROPERTY(ReplicatedUsing = OnRep_ExtraMagicResist)
-	FGameplayAttributeData ExtraMagicResist;
-
-	UPROPERTY(ReplicatedUsing = OnRep_Evasion)
-	FGameplayAttributeData Evasion;
 
 	UPROPERTY(ReplicatedUsing = OnRep_AttackSpeed)
 	FGameplayAttributeData AttackSpeed;

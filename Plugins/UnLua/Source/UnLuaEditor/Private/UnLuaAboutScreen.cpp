@@ -63,7 +63,7 @@ void SUnLuaAboutScreen::Construct(const FArguments& InArgs)
                   .Padding(FMargin(10.f, 10.f, 0.f, 0.f))
                 [
                     SAssignNew(LogoButton, SButton)
-                    .ButtonStyle(FEditorStyle::Get(), "NoBorder")
+                    .ButtonStyle(FAppStyle::Get(), "NoBorder")
                     .OnClicked(this, &SUnLuaAboutScreen::OnLogoButtonClicked)
                     [
                         SNew(SImage).Image(FUnLuaEditorStyle::GetInstance()->GetBrush("UnLuaEditor.UnLuaLogo"))

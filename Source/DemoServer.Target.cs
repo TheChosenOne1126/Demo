@@ -11,5 +11,6 @@ public class DemoServerTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_5;
 		ExtraModuleNames.Add("Demo");
+		bWithPushModel = true;
 	}
 }
