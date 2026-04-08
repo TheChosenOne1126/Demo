@@ -3,10 +3,8 @@
 #include "CAR_CanApplyDamage.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayEffect.h"
-#include "Attribute/BaseAttributeSet.h"
 #include "Global/GlobalTags.h"
 #include "Global/Statics.h"
-#include "Player/DPlayerState.h"
 
 bool UCAR_CanApplyDamage::CanApplyGameplayEffect_Implementation(
 	const UGameplayEffect* GameplayEffect,

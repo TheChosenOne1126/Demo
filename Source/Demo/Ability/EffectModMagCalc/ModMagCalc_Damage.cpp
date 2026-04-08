@@ -3,8 +3,6 @@
 #include "ModMagCalc_Damage.h"
 #include "Attribute/BaseAttributeSet.h"
 #include "Attribute/HeroAttributeSet.h"
-#include "Global/GlobalTags.h"
-#include "Global/Statics.h"
 
 UModMagCalc_Damage::UModMagCalc_Damage()
 {

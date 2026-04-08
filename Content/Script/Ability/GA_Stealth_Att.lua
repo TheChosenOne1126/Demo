@@ -14,6 +14,20 @@ function M:K2_CanActivateAbility(ActorInfo, Handle)
     if not Utils.HasImplementInterface(ActorInfo.AvatarActor, "BI_Stealth") then
         return false, RelevantTags
     end
+
+    local Target = ActorInfo.AvatarActor:GetSealthTarget()
+    return Target and Target:IsValid()
+end
+
+function M:K2_ActivateAbility()
+    self.Super.K2_ActivateAbility(self)
+
+    if not self:K2_CommitAbility() then
+        self:K2_EndAbility()
+        return
+    end
+
+    
 end
 
 return M
