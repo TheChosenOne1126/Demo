@@ -3,7 +3,7 @@
 #include "DAssetManager.h"
 #include "DemoSettings.h"
 #include "Statics.h"
-#include "DataAsset/PawnDataAsset.h"
+#include "DataAsset/GameDataAsset.h"
 
 UDAssetManager& UDAssetManager::Get()
 {
@@ -14,12 +14,12 @@ UDAssetManager& UDAssetManager::Get()
 	return *Singleton;
 }
 
-UPawnDataAsset* UDAssetManager::GetPawnDataAsset() const
+UGameDataAsset* UDAssetManager::GetGameDataAsset() const
 {
-	return PawnDataAsset;
+	return GameDataAsset;
 }
 
-void UDAssetManager::LoadPawnData()
+void UDAssetManager::LoadGameData()
 {
 	const UDemoSettings* DemoSettings = GetDefault<UDemoSettings>();
 	if (!::IsValid(DemoSettings))
@@ -28,19 +28,19 @@ void UDAssetManager::LoadPawnData()
 		return;
 	}
 
-	if (DemoSettings->PawnDataAssetPath.IsNull())
+	if (DemoSettings->GameDataAssetPath.IsNull())
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Null Pawn Data Asset Path"), __FUNCTION__));
 		return;
 	}
 
-	const FPrimaryAssetId PawnDataAssetId = GetPrimaryAssetIdForPath(DemoSettings->PawnDataAssetPath.ToSoftObjectPath());
+	const FPrimaryAssetId PawnDataAssetId = GetPrimaryAssetIdForPath(DemoSettings->GameDataAssetPath.ToSoftObjectPath());
 	
 	PawnDataHandle = LoadPrimaryAsset(PawnDataAssetId, TArray<FName>(), FStreamableDelegate::CreateWeakLambda(
 		this, [this]() -> void
 		{
-			PawnDataAsset = PawnDataHandle.IsValid() ? PawnDataHandle->GetLoadedAsset<UPawnDataAsset>() : nullptr;
-			OnPawnDataLoaded.Broadcast();
+			GameDataAsset = PawnDataHandle.IsValid() ? PawnDataHandle->GetLoadedAsset<UGameDataAsset>() : nullptr;
+			OnGameDataLoaded.Broadcast();
 		}));
 }
 
@@ -49,7 +49,7 @@ void UDAssetManager::StartInitialLoading()
 	Super::StartInitialLoading();
 	
 #if WITH_EDITOR
-	if (::IsValid(PawnDataAsset))
+	if (::IsValid(GameDataAsset))
 	{
 		return;
 	}
@@ -61,12 +61,12 @@ void UDAssetManager::StartInitialLoading()
 		return;
 	}
 
-	if (DemoSettings->PawnDataAssetPath.IsNull())
+	if (DemoSettings->GameDataAssetPath.IsNull())
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Null Pawn Data Asset Path"), __FUNCTION__));
 		return;
 	}
 	
-	PawnDataAsset = DemoSettings->PawnDataAssetPath.LoadSynchronous();
+	GameDataAsset = DemoSettings->GameDataAssetPath.LoadSynchronous();
 #endif
 }

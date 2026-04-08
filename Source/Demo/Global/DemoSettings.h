@@ -6,7 +6,7 @@
 #include "Engine/DeveloperSettings.h"
 #include "DemoSettings.generated.h"
 
-class UPawnDataAsset;
+class UGameDataAsset;
 
 UCLASS(DefaultConfig, Config = Game)
 class DEMO_API UDemoSettings : public UDeveloperSettings
@@ -17,8 +17,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Config, Category = "Damage")
 	float ArmorCoe;
 
-	UPROPERTY(EditDefaultsOnly, Config, Category = "PawnData", meta = (AllowAbstract = "false"))
-	TSoftObjectPtr<UPawnDataAsset> PawnDataAssetPath;
+	UPROPERTY(EditDefaultsOnly, Config, Category = "GameData", meta = (AllowAbstract = "false"))
+	TSoftObjectPtr<UGameDataAsset> GameDataAssetPath;
 
 	UPROPERTY(EditDefaultsOnly, Config, Category = "Ability")
 	TSet<int32> GainExtraAbilityPointPawnLevelSet;

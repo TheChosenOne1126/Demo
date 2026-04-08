@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
-#include "PawnDataAsset.generated.h"
+#include "GameDataAsset.generated.h"
 
 class UGameplayEffect;
 class UMontageDataAsset;
@@ -44,7 +44,7 @@ struct FGameplayEffectData
 };
 
 UCLASS()
-class DEMO_API UPawnDataAsset : public UPrimaryDataAsset
+class DEMO_API UGameDataAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 

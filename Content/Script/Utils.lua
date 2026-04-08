@@ -12,14 +12,14 @@ function Utils.LogError(Message, Object)
     UE.UStatics.Log(Object, UE.ELogType.Error, ErrorMessage, true)
 end
 
-local function GetPawnDataAsset()
+local function GetGameDataAsset()
     local AssetManager = UE.UAssetManager.GetIfInitialized()
     if not AssetManager or not AssetManager:IsValid() or not AssetManager:IsA(UE.UDAssetManager) then
         Utils.LogError("nil or invalid AssetManager")
         return nil
     end
 
-    return AssetManager:GetPawnDataAsset()
+    return AssetManager.GameDataAsset
 end
 
 ---@param PawnTag FGameplayTag
@@ -30,13 +30,13 @@ function Utils.GetPawnData(PawnTag)
         return nil
     end
 
-    local PawnDataAsset = GetPawnDataAsset()
-    if not PawnDataAsset or not PawnDataAsset:IsValid() then
-        Utils.LogError("nil or invalid PawnDataAsset")
+    local GameDataAsset = GetGameDataAsset()
+    if not GameDataAsset or not GameDataAsset:IsValid() then
+        Utils.LogError("nil or invalid GameDataAsset")
         return nil
     end
 
-    return PawnDataAsset.PawnDataMap:FindRef(PawnTag)
+    return GameDataAsset.PawnDataMap:FindRef(PawnTag)
 end
 
 ---@param Tag FGameplayTag
@@ -47,18 +47,45 @@ function Utils.GetCameraModifierByTag(Tag)
         return nil
     end
 
-    local PawnDataAsset = GetPawnDataAsset()
-    if not PawnDataAsset or not PawnDataAsset:IsValid() then
-        Utils.LogError("nil or invalid PawnDataAsset")
+    local GameDataAsset = GetGameDataAsset()
+    if not GameDataAsset or not GameDataAsset:IsValid() then
+        Utils.LogError("nil or invalid GameDataAsset")
         return nil
     end
 
-    return PawnDataAsset.CameraModifierMap:FindRef(Tag)
+    return GameDataAsset.CameraModifierMap:FindRef(Tag)
 end
 
+local BlueprintInterface = nil
+
 function Utils.InitializeBPInterfaceClass()
-    Utils.BI_MotionWarp = LoadClass("/Game/Blueprints/Interface/BI_MotionWarp.BI_MotionWarp_C")
-    Utils.BI_Stealth = LoadClass("/Game/Blueprints/Interface/BI_Stealth.BI_Stealth_C")
+    BlueprintInterface = {
+        ["BI_MotionWarp"] = LoadClass("/Game/Blueprints/Interface/BI_MotionWarp.BI_MotionWarp_C"),
+        ["BI_Stealth"] = LoadClass("/Game/Blueprints/Interface/BI_Stealth.BI_Stealth_C")
+    }
+end
+
+---@param Object UObject
+---@param InterfaceName string
+---@return bool
+function Utils.HasImplementInterface(Object, InterfaceName)
+    if not BlueprintInterface then
+        Utils.LogError("InitializeBPInterfaceClass was not called")
+        return false
+    end
+
+    local InterfaceClass = BlueprintInterface[InterfaceName]
+    if not InterfaceClass or not InterfaceClass:IsValid() then
+        Utils.LogError(string.format("invalid InterfaceName:[%s]", tostring(InterfaceName)))
+        return false
+    end
+
+    if not Object or not Object:IsValid() then
+        Utils.LogError("invalid Object")
+        return false
+    end
+
+    return UE.UKismetSystemLibrary.DoesImplementInterface(Object, InterfaceClass)
 end
 
 return Utils

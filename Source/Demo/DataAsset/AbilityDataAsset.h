@@ -23,9 +23,6 @@ struct FAbilityData
 
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTagContainer Tags;
-
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UTexture2D> AbilityTexture = nullptr;
 };
 
 UCLASS()

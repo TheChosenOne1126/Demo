@@ -6,7 +6,7 @@
 #include "Engine/AssetManager.h"
 #include "DAssetManager.generated.h"
 
-class UPawnDataAsset;
+class UGameDataAsset;
 
 UCLASS(Config = Game)
 class DEMO_API UDAssetManager : public UAssetManager
@@ -17,17 +17,17 @@ public:
 	static UDAssetManager& Get();
 	
 	UFUNCTION()
-	UPawnDataAsset* GetPawnDataAsset() const;
+	UGameDataAsset* GetGameDataAsset() const;
 	
-	FSimpleMulticastDelegate OnPawnDataLoaded;
+	FSimpleMulticastDelegate OnGameDataLoaded;
 
-	void LoadPawnData();
+	void LoadGameData();
 	
 	virtual void StartInitialLoading() override;
 
 private:
 	UPROPERTY(Transient)
-	TObjectPtr<UPawnDataAsset> PawnDataAsset;
+	TObjectPtr<UGameDataAsset> GameDataAsset;
 	
 	TSharedPtr<FStreamableHandle> PawnDataHandle;
 };

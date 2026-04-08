@@ -6,24 +6,6 @@ local GameplayTags = require("GameplayTags")
 local ZoomOffset = 30
 local ZoomSpeed = 3
 
----@param self GA_Crouch_C
-local function RemoveDelegatePlayerControllerSet(self)
-    local Asc = self:GetAbilitySystemComponentFromActorInfo()
-    if not Asc or not Asc:IsValid() then
-        Utils.LogError("invalid UDAbilitySystemComponent")
-        return
-    end
-
-    if not Asc:IsA(UE.UDAbilitySystemComponent) then
-        Utils.LogError("AbilitySystemComponent is not UDAbilitySystemComponent")
-        return
-    end
-
-    if Asc.PlayerControllerSet:IsBound() then
-        Asc.PlayerControllerSet:Remove(self, self.OnPlayerControllerSet)
-    end
-end
-
 ---@param ActorInfo FGameplayAbilityActorInfo
 function M:OnInitialized(ActorInfo)
     self.Super.OnInitialized(self, ActorInfo)
@@ -48,6 +30,10 @@ end
 
 ---@param PlayerController APlayerController
 function M:OnPlayerControllerSet(PlayerController)
+    if self.CM_Zoom then
+        return
+    end
+
     if not PlayerController or not PlayerController:IsValid() then
         Utils.LogError("invalid PlayerController")
         return
@@ -75,8 +61,6 @@ function M:OnPlayerControllerSet(PlayerController)
     end
     self.CM_Zoom:DisableModifier(true)
     self.CM_Zoom:Init(ZoomOffset, ZoomSpeed)
-
-    RemoveDelegatePlayerControllerSet(self)
 end
 
 ---@param ActorInfo FGameplayAbilityActorInfo
@@ -84,11 +68,10 @@ function M:OnDeInitialized(ActorInfo)
     local PlayerController = ActorInfo.PlayerController
 
     if PlayerController and PlayerController:IsValid() and PlayerController:IsLocalController() then
-        RemoveDelegatePlayerControllerSet(self)
-
         local PlayerCameraManager = PlayerController.PlayerCameraManager
         if PlayerCameraManager and PlayerCameraManager:IsValid() and self.CM_Zoom and self.CM_Zoom:IsValid() then
             PlayerCameraManager:RemoveCameraModifier(self.CM_Zoom)
+            self.CM_Zoom = nil
         end
     end
 

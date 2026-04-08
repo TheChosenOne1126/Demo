@@ -18,15 +18,7 @@ local function TriggerVault(self)
         end
 
         local Avatar = self:GetAvatarActorFromActorInfo()
-        if not Avatar or not Avatar:IsValid() then
-            error("invalid Avatar")
-        end
-
-        if not Utils.BI_MotionWarp or not Utils.BI_MotionWarp:IsValid() then
-            error("invalid BI_MotionWarp")
-        end
-
-        if not UE.UKismetSystemLibrary.DoesImplementInterface(Avatar, Utils.BI_MotionWarp) then
+        if not Utils.HasImplementInterface(Avatar, "BI_MotionWarp") then
             error("Avatar not implement BI_MotionWarp")
         end
 

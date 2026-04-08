@@ -109,17 +109,7 @@ function M:OnOverlap(bIsOverlap, OverlapActors)
 
     self.OverlapActors = self.OverlapActors or UE.TArray(UE.AActor)
     for _, Actor in pairs(self.OverlapActors) do
-        if not Actor or not Actor:IsValid() then
-            Utils.LogError("invalid Actor in OverlapActors")
-            goto continue
-        end
-
-        if not Utils.BI_Stealth or not Utils.BI_Stealth:IsValid() then
-            Utils.LogError("invalid BI_Stealth")
-            break
-        end
-
-        if not UE.UKismetSystemLibrary.DoesImplementInterface(Actor, Utils.BI_Stealth) then
+        if not Utils.HasImplementInterface(Actor, "BI_Stealth") then
             goto continue
         end
 

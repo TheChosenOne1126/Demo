@@ -40,8 +40,12 @@ void UAbilityTask_TickBoxOverlap::TickTask(float DeltaTime)
 
 	TArray<FOverlapResult> Overlaps;
 	FCollisionObjectQueryParams ObjectParams;
-	const ECollisionChannel& Channel = UCollisionProfile::Get()->ConvertToCollisionChannel(false, ObjectType);
-	ObjectParams.AddObjectTypesToQuery(Channel);
+
+	for (const TEnumAsByte<EObjectTypeQuery>& ObjectType : ObjectTypes)
+	{
+		const ECollisionChannel& Channel = UCollisionProfile::Get()->ConvertToCollisionChannel(false, ObjectType);
+		ObjectParams.AddObjectTypesToQuery(Channel);
+	}
 
 	const bool bIsOverlap = World->OverlapMultiByObjectType(
 		Overlaps,

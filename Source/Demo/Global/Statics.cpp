@@ -1,13 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Statics.h"
-#include "DAssetManager.h"
-#include "GlobalTags.h"
-#include "Ability/DGameplayAbility.h"
-#include "Component/DAbilitySystemComponent.h"
-#include "DataAsset/PawnDataAsset.h"
 #include "Interface/SweepInterface.h"
-#include "Player/DCharacter.h"
 
 DEMO_API DEFINE_LOG_CATEGORY(LogDemoGame)
 
