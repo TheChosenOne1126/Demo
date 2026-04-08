@@ -54,4 +54,10 @@ function M:SetStealthTarget(Target)
     self.StealthTarget = Target
 end
 
+---@comment override BI_Stealth
+---@return AActor
+function M:GetSealthTarget()
+    return self.StealthTarget
+end
+
 return M
