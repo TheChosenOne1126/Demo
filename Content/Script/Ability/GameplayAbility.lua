@@ -21,7 +21,7 @@ function M:K2_ActivateAbility()
         return
     end
 
-    local TagQuery = UE.UBlueprintGameplayTagLibrary.MakeQuery_MatchAnyTags(self.ActivationCancelTags)
+    local TagQuery = UE.UBlueprintGameplayTagLibrary.MakeGameplayTagQuery_MatchAnyTags(self.ActivationCancelTags)
     local Task = UE.UAbilityTask_WaitGameplayTagQuery.WaitGameplayTagQuery(self, TagQuery)
     if Task and Task:IsValid() then
         Task.Triggered:Add(self, self.OnTriggered)

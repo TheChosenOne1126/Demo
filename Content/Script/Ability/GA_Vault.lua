@@ -89,6 +89,12 @@ function M:OnInitialized(ActorInfo)
             Utils.LogError(string.format("invalid DrawDebugType: %d", Type))
         end
     end)
+
+    self.ActivationCancelTags = UE.FGameplayTagContainer.Make_Table({
+        GameplayTags.Event_Dead,
+        GameplayTags.Event_OnHit
+    })
+
     self.Super.OnInitialized(self, ActorInfo)
 end
 

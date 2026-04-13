@@ -14,13 +14,13 @@ class DEMO_API UAbilityTask_SyncTargetData : public UAbilityTask
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION()
-	static UAbilityTask_SyncTargetData* SyncTargetData(UGameplayAbility* OwningAbility, bool bOnlySyncOnce);
+	UFUNCTION(BlueprintCallable, Category="Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
+	static UAbilityTask_SyncTargetData* SyncTargetData(UGameplayAbility* OwningAbility, bool bOnlySyncOnce = false);
 	
-	UPROPERTY()
+	UPROPERTY(BlueprintAssignable)
 	FSyncTargetDataDelegate SyncData;
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void CallServerSetTargetData(const FGameplayAbilityTargetDataHandle& Data, FGameplayTag ApplicationTag) const;
 	
 	virtual void OnDestroy(bool bInOwnerFinished) override;

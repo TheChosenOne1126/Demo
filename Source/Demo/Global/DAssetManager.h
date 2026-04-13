@@ -16,7 +16,6 @@ class DEMO_API UDAssetManager : public UAssetManager
 public:
 	static UDAssetManager& Get();
 	
-	UFUNCTION()
 	UGameDataAsset* GetGameDataAsset() const;
 	
 	FSimpleMulticastDelegate OnGameDataLoaded;

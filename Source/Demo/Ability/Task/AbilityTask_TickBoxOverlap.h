@@ -29,7 +29,7 @@ public:
 	UFUNCTION()
 	void UpdateBoxCenter(const FVector& InBoxCenter);
 	
-	UPROPERTY()
+	UPROPERTY(BlueprintAssignable)
 	FTickBoxOverlapDelegate Overlap;
 	
 private:
