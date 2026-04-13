@@ -60,6 +60,7 @@ local function TriggerVault(self)
 
     if self:IsPredictingClient() then
         if not self.SyncTargetDataTask or not self.SyncTargetDataTask:IsValid() then
+            Utils.LogError("invalid SyncTargetDataTask")
             return
         end
 
@@ -99,22 +100,20 @@ function M:K2_ActivateAbility()
         return
     end
     
-    if self:K2_HasAuthority() then
-        local VaultTags = {
-            GameplayTags.Event_Vault_Start,
-            GameplayTags.Event_Vault_End
-        }
+    local VaultTags = {
+        GameplayTags.Event_Vault_Start,
+        GameplayTags.Event_Vault_End
+    }
 
-        for _, Tag in pairs(VaultTags) do
-            local Task = UE.UAbilityTask_WaitGameplayEvent.WaitGameplayEvent(self, Tag)
-            if Task and Task:IsValid() then
-                Task.EventReceived:Add(self, self.OnEventReceived)
-                Task:ReadyForActivation()
-            end
+    for _, Tag in pairs(VaultTags) do
+        local Task = UE.UAbilityTask_WaitGameplayEvent.WaitGameplayEvent(self, Tag)
+        if Task and Task:IsValid() then
+            Task.EventReceived:Add(self, self.OnEventReceived)
+            Task:ReadyForActivation()
         end
     end
 
-    self.SyncTargetDataTask = UE.UAbilityTask_SyncTargetData.SyncTargetData(self, false)
+    self.SyncTargetDataTask = UE.UAbilityTask_SyncTargetData.SyncTargetData(self, true)
     if self.SyncTargetDataTask and self.SyncTargetDataTask:IsValid() then
         self.SyncTargetDataTask.SyncData:Add(self, self.OnSyncTargetData)
         self.SyncTargetDataTask:ReadyForActivation()
