@@ -32,21 +32,21 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FPlayMontageAndWaitForEventDelegate EventReceived;
 
-	void OnMontageBlendedIn(UAnimMontage* Montage);
+	void OnMontageBlendedIn(UAnimMontage* Montage) const;
 
-	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted) const;
 
-	void OnGameplayAbilityCancelled();
+	void OnGameplayAbilityCancelled() const;
 
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	
-	void OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload);
+	void OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const;
 	
 	UFUNCTION(BlueprintCallable, Category="Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
 	static UAbilityTask_PlayMontageAndWaitForEvent* PlayMontageAndWaitForEvent(
 		UGameplayAbility* OwningAbility,
 		UAnimMontage* MontageToPlay,
-		FGameplayTagContainer EventTags,
+		FGameplayTagContainer EventTags = FGameplayTagContainer(),
 		const AActor* ExternalActor = nullptr,
 		float Rate = 1.f,
 		FName StartSection = NAME_None,
@@ -61,13 +61,13 @@ public:
 protected:
 	virtual void Activate() override;
 
-	bool StopPlayingMontage();
+	bool StopPlayingMontage() const;
 	
 	void SetExternalTarget(const AActor* Actor);
 	
-	UAbilitySystemComponent* GetTargetAsc();
+	UAbilitySystemComponent* GetTargetAsc() const;
 	
-	void ResetAnimRootMotionTranslationScale(float Scale);
+	void ResetAnimRootMotionTranslationScale(float Scale) const;
 
 	FOnMontageBlendedInEnded BlendedInDelegate;
 	FOnMontageBlendingOutStarted BlendingOutDelegate;

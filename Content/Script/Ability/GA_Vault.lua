@@ -2,6 +2,7 @@
 local M = UnLua.Class("Ability.GameplayAbility")
 local Utils = require("Utils")
 local GameplayTags = require("GameplayTags")
+local Enum = require("Enum")
 
 local TraceCount = 3
 
@@ -18,7 +19,7 @@ local function TriggerVault(self)
         end
 
         local Avatar = self:GetAvatarActorFromActorInfo()
-        if not Utils.HasImplementInterface(Avatar, "BI_MotionWarp") then
+        if not Utils.HasImplementInterface(Avatar, Enum.BPInterface.BI_MotionWarp) then
             error("Avatar not implement BI_MotionWarp")
         end
 
@@ -51,10 +52,16 @@ local function TriggerVault(self)
         WarpingTarget.Location = HitResult.Location
         MotionWarping:AddOrUpdateWarpTarget(WarpingTarget)
     end
-        
-    local Task = UE.UAbilityTask_PlayMontageAndWait.CreatePlayMontageAndWaitProxy(self, nil, Montage)
+    
+    local VaultTags = UE.FGameplayTagContainer.Make_Table({
+        GameplayTags.Event_Vault_Start,
+        GameplayTags.Event_Vault_End
+    })
+
+    local Task = UE.UAbilityTask_PlayMontageAndWaitForEvent.PlayMontageAndWaitForEvent(self, Montage, VaultTags)
     if Task and Task:IsValid() then
         Task.OnCompleted:Add(self, self.OnMontageCompleted)
+        Task.EventReceived:Add(self, self.OnEventReceived)
         Task:ReadyForActivation()
     end
 
@@ -104,19 +111,6 @@ function M:K2_ActivateAbility()
     if not self:K2_CommitAbility() then
         self:K2_EndAbility()
         return
-    end
-    
-    local VaultTags = {
-        GameplayTags.Event_Vault_Start,
-        GameplayTags.Event_Vault_End
-    }
-
-    for _, Tag in pairs(VaultTags) do
-        local Task = UE.UAbilityTask_WaitGameplayEvent.WaitGameplayEvent(self, Tag)
-        if Task and Task:IsValid() then
-            Task.EventReceived:Add(self, self.OnEventReceived)
-            Task:ReadyForActivation()
-        end
     end
 
     self.SyncTargetDataTask = UE.UAbilityTask_SyncTargetData.SyncTargetData(self, true)
@@ -220,8 +214,9 @@ function M:K2_ActivateAbility()
     end
 end
 
+---@param EventTag FGameplayTag
 ---@param Payload FGameplayEventData
-function M:OnEventReceived(Payload)
+function M:OnEventReceived(EventTag,Payload)
     local Avatar = self:GetAvatarActorFromActorInfo()
     if not Avatar or not Avatar:IsValid() then
         Utils.LogError("invalid Avatar")
@@ -239,9 +234,9 @@ function M:OnEventReceived(Payload)
         return
     end
 
-    if Payload.EventTag:MatchesTagExact(GameplayTags.Event_Vault_Start) then
+    if EventTag:MatchesTagExact(GameplayTags.Event_Vault_Start) then
         Cmc:SetMovementMode(UE.EMovementMode.MOVE_Flying)
-    elseif Payload.EventTag:MatchesTagExact(GameplayTags.Event_Vault_End) then
+    elseif EventTag:MatchesTagExact(GameplayTags.Event_Vault_End) then
         Cmc:SetMovementMode(UE.EMovementMode.MOVE_Walking)
     end
 end

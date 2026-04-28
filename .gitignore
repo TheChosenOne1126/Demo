@@ -80,3 +80,4 @@ DerivedDataCache/*
 *.props
 Plugins/UnLua/Source/UnLuaDefaultParamCollector/obj
 Plugins/UnLua/Source/UnLuaDefaultParamCollector/bin
+Content/Script/.vscode/launch.json

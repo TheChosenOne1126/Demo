@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Global/Statics.h"
 
-void UAbilityTask_PlayMontageAndWaitForEvent::OnMontageBlendedIn(UAnimMontage* Montage)
+void UAbilityTask_PlayMontageAndWaitForEvent::OnMontageBlendedIn(UAnimMontage* Montage) const
 {
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
@@ -14,7 +14,7 @@ void UAbilityTask_PlayMontageAndWaitForEvent::OnMontageBlendedIn(UAnimMontage* M
 	}
 }
 
-void UAbilityTask_PlayMontageAndWaitForEvent::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+void UAbilityTask_PlayMontageAndWaitForEvent::OnMontageBlendingOut(UAnimMontage* Montage, const bool bInterrupted) const
 {
 	if (Ability && Ability->GetCurrentMontage() == MontageToPlay)
 	{
@@ -42,7 +42,7 @@ void UAbilityTask_PlayMontageAndWaitForEvent::OnMontageBlendingOut(UAnimMontage*
 	}
 }
 
-void UAbilityTask_PlayMontageAndWaitForEvent::OnGameplayAbilityCancelled()
+void UAbilityTask_PlayMontageAndWaitForEvent::OnGameplayAbilityCancelled() const
 {
 	if (StopPlayingMontage() && ShouldBroadcastAbilityTaskDelegates())
 	{
@@ -67,7 +67,7 @@ void UAbilityTask_PlayMontageAndWaitForEvent::OnMontageEnded(UAnimMontage* Monta
 	EndTask();
 }
 
-void UAbilityTask_PlayMontageAndWaitForEvent::OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload)
+void UAbilityTask_PlayMontageAndWaitForEvent::OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const
 {
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
@@ -81,13 +81,13 @@ void UAbilityTask_PlayMontageAndWaitForEvent::OnGameplayEvent(FGameplayTag Event
 UAbilityTask_PlayMontageAndWaitForEvent* UAbilityTask_PlayMontageAndWaitForEvent::PlayMontageAndWaitForEvent(
 	UGameplayAbility* OwningAbility,
 	UAnimMontage* MontageToPlay,
-	FGameplayTagContainer EventTags,
+	const FGameplayTagContainer EventTags,
 	const AActor* ExternalActor,
-	float Rate,
-	FName StartSection,
-	bool bStopWhenAbilityEnds,
-	float AnimRootMotionTranslationScale,
-	float StartTimeSeconds)
+	const float Rate,
+	const FName StartSection,
+	const bool bStopWhenAbilityEnds,
+	const float AnimRootMotionTranslationScale,
+	const float StartTimeSeconds)
 {
 	ThisClass* Task = NewAbilityTask<ThisClass>(OwningAbility);
 	Task->MontageToPlay = MontageToPlay;
@@ -108,7 +108,7 @@ void UAbilityTask_PlayMontageAndWaitForEvent::ExternalCancel()
 	Super::ExternalCancel();
 }
 
-void UAbilityTask_PlayMontageAndWaitForEvent::OnDestroy(bool AbilityEnded)
+void UAbilityTask_PlayMontageAndWaitForEvent::OnDestroy(const bool AbilityEnded)
 {
 	if (IsValid(Ability))
 	{
@@ -158,8 +158,11 @@ void UAbilityTask_PlayMontageAndWaitForEvent::Activate()
 		return;
 	}
 
-	EventHandle = Asc->AddGameplayEventTagContainerDelegate(EventTags,
-		FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnGameplayEvent));
+	if (EventTags.IsValid())
+	{
+		EventHandle = Asc->AddGameplayEventTagContainerDelegate(EventTags,
+			FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnGameplayEvent));
+	}
 
 	if (Asc->PlayMontage(Ability, Ability->GetCurrentActivationInfo(), MontageToPlay, Rate, StartSection) > 0.f)
 	{
@@ -195,9 +198,9 @@ void UAbilityTask_PlayMontageAndWaitForEvent::Activate()
 	SetWaitingOnAvatar();
 }
 
-bool UAbilityTask_PlayMontageAndWaitForEvent::StopPlayingMontage()
+bool UAbilityTask_PlayMontageAndWaitForEvent::StopPlayingMontage() const
 {
-	UAbilitySystemComponent* Asc = GetTargetAsc();
+	const UAbilitySystemComponent* Asc = GetTargetAsc();
 	if (!IsValid(Asc))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Asc"), __FUNCTION__));
@@ -241,19 +244,19 @@ bool UAbilityTask_PlayMontageAndWaitForEvent::StopPlayingMontage()
 
 void UAbilityTask_PlayMontageAndWaitForEvent::SetExternalTarget(const AActor* Actor)
 {
-	if (Actor != nullptr)
+	if (IsValid(Actor))
 	{
 		bUseExternalTarget = true;
 		OptionalExternalAsc = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor);
 	}
 }
 
-UAbilitySystemComponent* UAbilityTask_PlayMontageAndWaitForEvent::GetTargetAsc()
+UAbilitySystemComponent* UAbilityTask_PlayMontageAndWaitForEvent::GetTargetAsc() const
 {
 	return bUseExternalTarget ? OptionalExternalAsc.Get() : AbilitySystemComponent.Get();
 }
 
-void UAbilityTask_PlayMontageAndWaitForEvent::ResetAnimRootMotionTranslationScale(float Scale)
+void UAbilityTask_PlayMontageAndWaitForEvent::ResetAnimRootMotionTranslationScale(const float Scale) const
 {
 	ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
 	if (IsValid(Character) && (Character->GetLocalRole() == ROLE_Authority ||

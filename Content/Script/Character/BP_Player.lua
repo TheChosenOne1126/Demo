@@ -44,19 +44,8 @@ function M:GetMotionWarpComp()
 end
 
 ---@comment override BI_Stealth
----@param Target AActor
-function M:SetStealthTarget(Target)
-    if not self:HasAuthority() then
-        Utils.LogError("SetStealthTarget should only be called on server")
-        return
-    end
-
-    self.StealthTarget = Target
-end
-
----@comment override BI_Stealth
 ---@return AActor
-function M:GetSealthTarget()
+function M:GetStealthTarget()
     return self.StealthTarget
 end
 

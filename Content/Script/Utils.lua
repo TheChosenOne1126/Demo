@@ -1,4 +1,14 @@
 local Utils = {}
+local Enum = require("Enum")
+
+function Utils.IsValidEnum(enumTable, value)
+    for _, v in pairs(enumTable) do
+        if v == value then
+            return true
+        end
+    end
+    return false
+end
 
 function Utils.LogWarning(Message, Object)
     local WarningMessage = string.format(" [Lua] %s \n", Message)
@@ -56,32 +66,35 @@ function Utils.GetCameraModifierByTag(Tag)
     return GameDataAsset.CameraModifierMap:FindRef(Tag)
 end
 
-local BlueprintInterface = nil
-
-function Utils.InitializeBPInterfaceClass()
-    BlueprintInterface = {
-        ["BI_MotionWarp"] = LoadClass("/Game/Blueprints/Interface/BI_MotionWarp.BI_MotionWarp_C"),
-        ["BI_Stealth"] = LoadClass("/Game/Blueprints/Interface/BI_Stealth.BI_Stealth_C")
-    }
-end
-
 ---@param Object UObject
----@param InterfaceName string
+---@param InterfaceType Enum.BPInterface
 ---@return bool
-function Utils.HasImplementInterface(Object, InterfaceName)
-    if not BlueprintInterface then
-        Utils.LogError("InitializeBPInterfaceClass was not called")
-        return false
-    end
-
-    local InterfaceClass = BlueprintInterface[InterfaceName]
-    if not InterfaceClass or not InterfaceClass:IsValid() then
-        Utils.LogError(string.format("invalid InterfaceName:[%s]", tostring(InterfaceName)))
+function Utils.HasImplementInterface(Object, InterfaceType)
+    if not Utils.IsValidEnum(Enum.BPInterface, InterfaceType) then
+        Utils.LogError(string.format("invalid InterfaceType:[%s], not a valid Enum.BPInterface", tostring(InterfaceType)))
         return false
     end
 
     if not Object or not Object:IsValid() then
         Utils.LogError("invalid Object")
+        return false
+    end
+
+    local GameInstance = UE.UGameplayStatics.GetGameInstance(Object)
+    if not GameInstance or not GameInstance:IsValid() then
+        Utils.LogError("invalid GameInstance")
+        return false
+    end
+    
+    local BPInterfaceClass = GameInstance.BPInterfaceClass
+    if not BPInterfaceClass then
+        Utils.LogError("nil BPInterfaceClass")
+        return false
+    end
+
+    local InterfaceClass = BPInterfaceClass[InterfaceType]
+    if not InterfaceClass or not InterfaceClass:IsValid() then
+        Utils.LogError(string.format("invalid InterfaceType:[%s]", tostring(InterfaceType)))
         return false
     end
 

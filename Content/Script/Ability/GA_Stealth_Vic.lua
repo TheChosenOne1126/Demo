@@ -1,6 +1,7 @@
 ---@type GA_Stealth_C
 local M = UnLua.Class("Ability.GameplayAbility")
 local Utils = require("Utils")
+local Enum = require("Enum")
 
 local CenterOffset = -33
 local Extent = UE.FVector(30, 30, 90)
@@ -108,21 +109,35 @@ function M:OnOverlap(bIsOverlap, OverlapActors)
     end
 
     self.OverlapActors = self.OverlapActors or UE.TArray(UE.AActor)
+
+    local RemoveOverlapActors = UE.TArray(UE.AActor)
     for _, Actor in pairs(self.OverlapActors) do
-        if not Utils.HasImplementInterface(Actor, "BI_Stealth") then
+        if not bIsOverlap or not OverlapActors:Contains(Actor) then
+            Actor:SetStealthTarget(nil)
+            RemoveOverlapActors:Add(Actor)
+        else
+            OverlapActors:RemoveItem(Actor)
+        end
+    end
+
+    for _, Actor in pairs(RemoveOverlapActors) do
+        self.OverlapActors:RemoveItem(Actor)
+    end
+
+    for _, Actor in pairs(OverlapActors) do
+        if not Utils.HasImplementInterface(Actor, Enum.BPInterface.BI_Stealth) then
             goto continue
         end
 
-        if not bIsOverlap or OverlapActors:Contains(Actor) then
-            Actor:SetStealthTarget(nil)
-        else
-            Actor:SetStealthTarget(Avatar)
+        if self.OverlapActors:Contains(Actor) then
+            goto continue
         end
+
+        self.OverlapActors:AddUnique(Actor)
+        Actor:SetStealthTarget(Avatar)
 
         ::continue::
     end
-
-    self.OverlapActors = OverlapActors
 end
 
 ---@param DeltaSeconds float
