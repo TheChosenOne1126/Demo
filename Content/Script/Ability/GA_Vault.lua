@@ -97,6 +97,7 @@ function M:OnInitialized(ActorInfo)
         end
     end)
 
+    self.DrawDebugType = UE.EDrawDebugTrace.None
     self.ActivationCancelTags = UE.FGameplayTagContainer.Make_Table({
         GameplayTags.Event_Dead,
         GameplayTags.Event_OnHit
@@ -235,9 +236,10 @@ function M:OnEventReceived(EventTag,Payload)
     end
 
     if EventTag:MatchesTagExact(GameplayTags.Event_Vault_Start) then
+        Avatar:SetActorEnableCollision(false)
         Cmc:SetMovementMode(UE.EMovementMode.MOVE_Flying)
     elseif EventTag:MatchesTagExact(GameplayTags.Event_Vault_End) then
-        Cmc:SetMovementMode(UE.EMovementMode.MOVE_Walking)
+        --Cmc:SetMovementMode(UE.EMovementMode.MOVE_Walking)
     end
 end
 
@@ -270,6 +272,21 @@ function M:OnSyncTargetData(Data, Tag)
 end
 
 function M:OnMontageCompleted()
+    local Avatar = self:GetAvatarActorFromActorInfo()
+    if not Avatar or not Avatar:IsValid() then
+        Utils.LogError("invalid Avatar")
+        return
+    end
+
+    Avatar:SetActorEnableCollision(true)
+
+    local Cmc = Avatar.CharacterMovement
+    if not Cmc or not Cmc:IsValid() then
+        Utils.LogError("invalid CharacterMovementComponent")
+        return
+    end
+
+    Cmc:SetMovementMode(UE.EMovementMode.MOVE_Walking)
     self:K2_EndAbility()
 end
 

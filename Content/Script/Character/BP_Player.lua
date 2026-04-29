@@ -3,15 +3,15 @@ local M = UnLua.Class()
 local Utils = require("Utils")
 
 local StealthOffset = {
-    Forward = -72,
-    Right = 41,
+    Forward = -80,
+    Right = -25,
     Up = -90
 }
 
 function M:UserConstructionScript()
     if self:HasAuthority() then
-        self.MotionWarping = NewObject(UE.UMotionWarpingComponent, self, "MotionWarping")
-        self.MotionWarping:SetComponentTickEnabled(false)
+        self.MotionWarping = self:AddComponentByClass(UE.UMotionWarpingComponent, false, self:GetTransform(), false)
+        self.MotionWarping:SetComponentTickEnabled(true)
 
         if not UE.UKismetSystemLibrary.IsStandalone(self) then
             self.MotionWarping:SetIsReplicated(false)
@@ -20,8 +20,8 @@ function M:UserConstructionScript()
 end
 
 function M:OnRep_Controller()
-    self.MotionWarping = NewObject(UE.UMotionWarpingComponent, self, "MotionWarping")
-    self.MotionWarping:SetComponentTickEnabled(false)
+    self.MotionWarping = self:AddComponentByClass(UE.UMotionWarpingComponent, false, self:GetTransform(), false)
+    self.MotionWarping:SetComponentTickEnabled(true)
 end
 
 ---@comment override BI_Stealth

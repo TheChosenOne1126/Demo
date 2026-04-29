@@ -1,13 +1,18 @@
----@type ANS_GenericEventByTag_C
+---@type AN_GenericEventByTag_C
 local M = UnLua.Class()
 
----@private
----@param self ANS_GenericEventByTag_C
----@param EventTag FGameplayTag
+---@return FString
+function M:GetNotifyName()
+    return self.NotifyName
+end
+
 ---@param MeshComp USkeletalMeshComponent
+---@param Animation UAnimSequenceBase
+---@param TotalDuration float
+---@param EventReference FAnimNotifyEventReference
 ---@return bool
-local function TriggerEvent(self, EventTag, MeshComp)
-    if not EventTag or not EventTag:IsValid() then
+function M:Received_Notify(MeshComp, Animation, TotalDuration, EventReference)
+    if not self.EventTag or not self.EventTag:IsValid() then
         return false
     end
 
@@ -21,32 +26,9 @@ local function TriggerEvent(self, EventTag, MeshComp)
     end
 
     local EventData = UE.FGameplayEventData()
-    EventData.EventTag = EventTag
-    Asc:HandleGameplayEvent(EventTag, EventData)
+    EventData.EventTag = self.EventTag
+    Asc:HandleGameplayEvent(self.EventTag, EventData)
     return true
-end
-
----@return FString
-function M:GetNotifyName()
-    return self.NotifyName
-end
-
----@param MeshComp USkeletalMeshComponent
----@param Animation UAnimSequenceBase
----@param TotalDuration float
----@param EventReference FAnimNotifyEventReference
----@return bool
-function M:Received_NotifyBegin(MeshComp, Animation, TotalDuration, EventReference)
-    return TriggerEvent(self, self.StartEventTag, MeshComp)
-end
-
----@param MeshComp USkeletalMeshComponent
----@param Animation UAnimSequenceBase
----@param TotalDuration float
----@param EventReference FAnimNotifyEventReference
----@return bool
-function M:Received_NotifyEnd(MeshComp, Animation, TotalDuration, EventReference)
-    return TriggerEvent(self, self.EndEventTag, MeshComp)
 end
 
 return M

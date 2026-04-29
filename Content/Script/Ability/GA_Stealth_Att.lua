@@ -18,7 +18,7 @@ function M:K2_CanActivateAbility(ActorInfo, Handle)
     end
 
     local Target = ActorInfo.AvatarActor:GetStealthTarget()
-    return Target and Target:IsValid()
+    return Target and Target:IsValid(), RelevantTags
 end
 
 function M:K2_ActivateAbility()
@@ -63,7 +63,7 @@ function M:K2_ActivateAbility()
         return
     end
 
-    TargetCmc:DisableMovement()
+    --TargetCmc:DisableMovement()
     Target:SetActorEnableCollision(false)
 
     local PawnData = Utils.GetPawnData(Target.PawnTag)
@@ -76,9 +76,14 @@ function M:K2_ActivateAbility()
         return nil
     end
 
+    local TagContainer = UE.FGameplayTagContainer.Make_Table({
+        GameplayTags.Event_Stealth_Vic
+    })
+
     local SealthVicMontage = MontageDataAsset.MontageDataMap:FindRef(GameplayTags.Montage_Stealth_Victory)
+
     local Task = UE.UAbilityTask_PlayMontageAndWaitForEvent.PlayMontageAndWaitForEvent(
-        self, SealthVicMontage, UE.FGameplayTagContainer(), Target)
+        self, SealthVicMontage, TagContainer, Target)
 
     if Task and Task:IsValid() then
         Task.EventReceived:Add(self, self.OnEventReceived)
@@ -89,10 +94,23 @@ end
 ---@param EventTag FGameplayTag
 ---@param Payload FGameplayEventData
 function M:OnEventReceived(EventTag, Payload)
-    local bIsOk, MotionWarping, Target = xpcall(function(self)
+    if not EventTag:MatchesTagExact(GameplayTags.Event_Stealth_Vic) then
+        return
+    end
+
+    local bIsOk, MotionWarping, Target, Avatar = xpcall(function(self)
         local OutAvatar = self:GetAvatarActorFromActorInfo()
         if not OutAvatar or not OutAvatar:IsValid() then
             error("invalid Avatar")
+        end
+        
+        if not OutAvatar:IsA(UE.ADCharacter) then
+            error("Avatar is not ACharacter")
+        end
+
+        local OutCmc = OutAvatar.CharacterMovement
+        if not OutCmc or not OutCmc:IsValid() then
+            error("invalid Avatar CharacterMovement")
         end
 
         if not Utils.HasImplementInterface(OutAvatar, Enum.BPInterface.BI_MotionWarp) then
@@ -113,7 +131,7 @@ function M:OnEventReceived(EventTag, Payload)
             error("invalid Target")
         end
 
-        return OutMotionWarping, OutTarget
+        return OutMotionWarping, OutTarget, OutAvatar
     end, function(err)
         Utils.LogError(err)
     end, self)
@@ -123,8 +141,9 @@ function M:OnEventReceived(EventTag, Payload)
         return
     end
 
+    local WarpingTarget = UE.FMotionWarpingTarget()
+    WarpingTarget.Name = "Stealth"
     MotionWarping:AddOrUpdateWarpTarget(Target:GetSealthWarpingTarget())
-
     local SealthAttMontage = self:GetMontageByTag(GameplayTags.Montage_Stealth_Attack)
     local Task = UE.UAbilityTask_PlayMontageAndWaitForEvent.PlayMontageAndWaitForEvent(self, SealthAttMontage)
     if Task and Task:IsValid() then
@@ -134,6 +153,10 @@ function M:OnEventReceived(EventTag, Payload)
 end
 
 function M:OnCompleted_Attack()
+    local OutAvatar = self:GetAvatarActorFromActorInfo()
+    local OutTarget = OutAvatar:GetStealthTarget()
+    OutTarget:SetActorEnableCollision(true)
+
     self:K2_EndAbility()
 end
 
