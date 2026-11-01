@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
 #include "UnLuaInterface.h"
 #include "GameFramework/PlayerState.h"
 #include "DPlayerState.generated.h"

@@ -1,6 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Statics.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
+#include "DAssetManager.h"
+#include "Component/DAbilitySystemComponent.h"
 #include "Interface/SweepInterface.h"
 
 DEMO_API DEFINE_LOG_CATEGORY(LogDemoGame)
@@ -54,6 +58,10 @@ void UStatics::Log(const UObject* Object, ELogType Type, const FString& String, 
 	if (IsValid(Object))
 	{
 		LogString += FString::Printf(TEXT("[%s]: "), *Object->GetName());
+	}
+	else
+	{
+		LogString += FString::Printf(TEXT("[Invalid Object]"));
 	}
 
 	LogString += String;
@@ -120,4 +128,45 @@ UPrimitiveComponent* UStatics::FindSweptComponent(AActor* Owner)
 	}
 
 	return ISweepInterface::Execute_GetSweptComponent(Owner);
+}
+
+UDAbilitySystemComponent* UStatics::GetAscFromActor(AActor* Actor)
+{
+	UDAbilitySystemComponent* Asc = Cast<UDAbilitySystemComponent>(
+		UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor, false));
+	
+	if (!IsValid(Asc))
+	{
+		Log(Actor, ELogType::Error, FString::Printf(TEXT("%hs: invalid Asc"), __FUNCTION__));
+	}
+	
+	return Asc;
+}
+
+bool UStatics::GetPawnData(FGameplayTag Tag, FPawnData& PawnData)
+{
+	const UDAssetManager& AssetManager = UDAssetManager::Get();
+	
+	if (!Tag.IsValid())
+	{
+		Log(&AssetManager, ELogType::Error, FString::Printf(TEXT("%hs: invalid Tag"), __FUNCTION__));
+		return false;
+	}
+	
+	UGameDataAsset* GameDataAsset = AssetManager.GetGameDataAsset();
+	if (!IsValid(GameDataAsset))
+	{
+		Log(&AssetManager, ELogType::Error, FString::Printf(TEXT("%hs: invalid GameDataAsset"), __FUNCTION__));
+		return false;
+	}
+
+	const FPawnData* FoundData = GameDataAsset->PawnDataMap.Find(Tag);
+	if (!FoundData)
+	{
+		Log(&AssetManager, ELogType::Error, FString::Printf(TEXT("%hs: invalid PawnData"), __FUNCTION__));
+		return false;
+	}
+	
+	PawnData = *FoundData;
+	return true;
 }

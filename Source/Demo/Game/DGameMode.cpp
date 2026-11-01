@@ -3,6 +3,7 @@
 #include "DGameMode.h"
 #include "Global/Statics.h"
 #include "Player/DCharacter.h"
+#include "Player/DPlayerController.h"
 
 APawn* ADGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform)
 {
@@ -20,4 +21,15 @@ APawn* ADGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* NewPl
 
 	ResultPawn->SetPawnTag(DefaultPawnTag);
 	return ResultPawn;
+}
+
+void ADGameMode::OnPostLogin(AController* NewPlayer)
+{
+	Super::OnPostLogin(NewPlayer);
+	
+	ADPlayerController* PC = Cast<ADPlayerController>(NewPlayer);
+	if (!IsValid(PC))
+	{
+		PC->ClientPostLogin();
+	}
 }

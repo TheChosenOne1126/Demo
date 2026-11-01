@@ -17,8 +17,10 @@ class DEMO_API ADGameMode : public AGameMode
 	
 public:
 	virtual APawn* SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform) override;
-	
+
 protected:
+	virtual void OnPostLogin(AController* NewPlayer) override;
+
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag DefaultPawnTag;
 };

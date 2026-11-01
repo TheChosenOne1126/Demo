@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DataAsset/GameDataAsset.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Statics.generated.h"
 
+class UDAbilitySystemComponent;
 class USweepComponent;
 
 DEMO_API DECLARE_LOG_CATEGORY_EXTERN(LogDemoGame, Log, All);
@@ -33,4 +35,10 @@ public:
 	static bool IsShippingBuild();
 	
 	static UPrimitiveComponent* FindSweptComponent(AActor* Owner);
+	
+	UFUNCTION(BlueprintPure, Category = "Ability", meta = (DefaultToSelf = "Actor"))
+	static UDAbilitySystemComponent* GetAscFromActor(AActor* Actor);
+	
+	UFUNCTION(BlueprintPure, Category = "Asset")
+	static bool GetPawnData(FGameplayTag Tag, FPawnData& PawnData);
 };

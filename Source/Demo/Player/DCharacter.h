@@ -9,13 +9,11 @@
 #include "DCharacter.generated.h"
 
 UCLASS(Abstract)
-class DEMO_API ADCharacter : public ACharacter, public IAbilitySystemInterface
+class DEMO_API ADCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void SetPawnTag(const FGameplayTag& NewPawnTag);

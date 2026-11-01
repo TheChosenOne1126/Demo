@@ -11,9 +11,33 @@
 class UInputMappingContext;
 
 USTRUCT(BlueprintType)
-struct FInputMappingData
+struct FInputType
 {
 	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag InputTag;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> InputAction;
+};
+
+USTRUCT(BlueprintType)
+struct FAbilityInputType : public FInputType
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag ActivationTag;
+};
+
+USTRUCT(BlueprintType)
+struct FInputMapType
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag Tag;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputMappingContext> MappingContext;
@@ -29,11 +53,31 @@ class DEMO_API UInputDataAsset : public UDataAsset
 
 public:
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FGameplayTag, TObjectPtr<UInputAction>> NativeInputMap;
+	TArray<FInputType> NativeInputTypes;
 
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FGameplayTag, TObjectPtr<UInputAction>> AbilityInputMap;
+	TArray<FAbilityInputType> AbilityInputTypes;
 
 	UPROPERTY(EditDefaultsOnly)
-	FInputMappingData InputMappingData;
+	TArray<FInputMapType> InputMapTypes;
+	
+#if WITH_EDITOR
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+#endif
+	
+private:
+#if WITH_EDITOR
+	bool ValidateNativeInputTypes(FDataValidationContext& Context) const;
+	
+	bool ValidateAbilityInputTypes(FDataValidationContext& Context) const;
+	
+	bool ValidateInputMapTypes(FDataValidationContext& Context) const;
+
+	static bool ValidateInputTypes(
+		FDataValidationContext& Context,
+		const FInputType& InputType,
+		const FString& ErrorName,
+		TSet<FGameplayTag>& TagSet,
+		TSet<TObjectPtr<UInputAction>>& ActionSet);
+#endif
 };

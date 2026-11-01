@@ -58,18 +58,18 @@ protected:
 		bool bReplicateEndAbility,
 		bool bWasCancelled) override;
 	
-	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	UFUNCTION(BlueprintImplementableEvent)
 	float LuaObtainCooldownMagnitude() const;
 	
 	UPROPERTY()
 	FGameplayTagContainer CooldownTags;
 	
-	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	UFUNCTION(BlueprintImplementableEvent)
 	bool LuaObtainCostInfo(TMap<FGameplayTag, float>& OutCostInfo) const;
 	
-	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	UFUNCTION(BlueprintImplementableEvent)
 	void OnInitialized(const FGameplayAbilityActorInfo& ActorInfo);
 	
-	UFUNCTION(BlueprintImplementableEvent, meta = (BlueprintInternalUseOnly = "true"))
+	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeInitialized(const FGameplayAbilityActorInfo& ActorInfo);
 };

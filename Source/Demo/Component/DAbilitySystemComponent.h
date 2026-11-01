@@ -18,17 +18,39 @@ class DEMO_API UDAbilitySystemComponent : public UAbilitySystemComponent, public
 public:
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 	
-	virtual void DestroyActiveState() override;
-	
 	virtual FString GetModuleName_Implementation() const override;
-	
+
 	virtual void OnPlayerControllerSet() override;
+	
+	void ProcessAbilityInput();
+	
+	void AbilityForInputStart(FGameplayTag InputTag);
+	
+	void AbilityForInputTrigger(FGameplayTag InputTag);
+	
+	void AbilityForInputCancel(FGameplayTag InputTag);
 	
 	UFUNCTION()
 	void GiveAbilityWithData(TSubclassOf<UGameplayAbility> AbilityClass, const FAbilityData& Data);
 	
 	UPROPERTY()
 	FDelegatePlayerControllerSet PlayerControllerSet;
+	
+protected:
+	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+	
+private:
+	UPROPERTY()
+	TArray<FGameplayAbilitySpecHandle> InputTriggerHandles;
+	
+	UPROPERTY()
+	TArray<FGameplayAbilitySpecHandle> InputStartHandles;
+	
+	UPROPERTY()
+	TArray<FGameplayAbilitySpec> CachePressedSpecs;
+	
+	UPROPERTY()
+	TArray<FGameplayAbilitySpec> CacheHeldSpecs;
 };
 
 #define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \

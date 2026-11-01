@@ -1,28 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "DCharacter.h"
-#include "DPlayerState.h"
-#include "Global/Statics.h"
+#include "Component/DAbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
-
-UAbilitySystemComponent* ADCharacter::GetAbilitySystemComponent() const
-{
-	if (!IsValid(GetPlayerState()))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid PlayerState"), __FUNCTION__));
-		return nullptr;
-	}
-	
-	const IAbilitySystemInterface* Asi = GetPlayerState<IAbilitySystemInterface>();
-	if (!Asi)
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: PlayerState is not inherit AbilitySystemInterface"), __FUNCTION__));
-		return nullptr;
-	}
-	
-	return Asi->GetAbilitySystemComponent();
-}
 
 void ADCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
