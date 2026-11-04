@@ -108,7 +108,7 @@ void ADPlayerController::OnRep_PlayerTag()
 		}
 		
 		EIC->BindActionValueLambda(AbilityInputType.InputAction, ETriggerEvent::Triggered,
-			[this, Tag](const FInputActionValue& Value) -> void
+			[this, Tag](const FInputActionValue&) -> void
 			{
 				OnAbilityTrigger(Tag);
 			});
@@ -116,13 +116,13 @@ void ADPlayerController::OnRep_PlayerTag()
 		if (AbilityInputType.ActivationTag.MatchesTagExact(GlobalTags::AbilityActivationInputHeldTag))
 		{
 			EIC->BindActionValueLambda(AbilityInputType.InputAction, ETriggerEvent::Started,
-				[this, Tag](const FInputActionValue& Value) -> void
+				[this, Tag](const FInputActionValue&) -> void
 				{
 					OnAbilityStart(Tag);
 				});
 			
 			EIC->BindActionValueLambda(AbilityInputType.InputAction, ETriggerEvent::Canceled,
-				[this, Tag](const FInputActionValue& Value) -> void
+				[this, Tag](const FInputActionValue&) -> void
 				{
 					OnAbilityCancel(Tag);
 				});

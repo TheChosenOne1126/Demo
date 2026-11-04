@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "UnLuaInterface.h"
+#include "Ability/DAbilityTypes.h"
 #include "DAbilitySystemComponent.generated.h"
 
 struct FAbilityData;
@@ -21,6 +22,33 @@ public:
 	virtual FString GetModuleName_Implementation() const override;
 
 	virtual void OnPlayerControllerSet() override;
+
+	virtual void NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled) override;
+
+	void ConsumeReplicatedPayload(const FGameplayTag& Tag, const FGameplayAbilitySpecHandle& Handle, const FPredictionKey& Key) const;
+	
+	FGameplayTag GetReplicatedPayloadTag(const FGameplayTag& Tag, const FGameplayAbilitySpecHandle& Handle, const FPredictionKey& Key) const;
+	
+	void InvokeReplicatedPayload(
+		const FGameplayTag& Tag,
+		const FGameplayAbilitySpecHandle& Handle,
+		const FPredictionKey& AbilityOriginalPredictionKey,
+		const FPredictionKey& CurrentPredictionKey,
+		const FGameplayTag& PayloadTag);
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetReplicatedPayload(const FGameplayTag& Tag,
+		const FGameplayAbilitySpecHandle& Handle,
+		const FPredictionKey& AbilityOriginalPredictionKey,
+		const FPredictionKey& CurrentPredictionKey,
+		const FGameplayTag& PayloadTag);
+	
+	bool CallReplicatedEventDelegateIfSet(const FGameplayTag& Tag, const FGameplayAbilitySpecHandle& Handle, const FPredictionKey& Key) const;
+	
+	FSimpleMulticastDelegate& AbilityReplicatedPayloadDelegate(
+		const FGameplayTag& Tag,
+		const FGameplayAbilitySpecHandle& Handle,
+		const FPredictionKey& Key);
 	
 	void ProcessAbilityInput();
 	
@@ -39,6 +67,12 @@ public:
 protected:
 	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
 	
+	virtual void InternalServerTryActivateAbility(
+		FGameplayAbilitySpecHandle Handle,
+		bool InputPressed,
+		const FPredictionKey& PredictionKey,
+		const FGameplayEventData* TriggerEventData) override;
+	
 private:
 	UPROPERTY()
 	TArray<FGameplayAbilitySpecHandle> InputTriggerHandles;
@@ -47,10 +81,12 @@ private:
 	TArray<FGameplayAbilitySpecHandle> InputStartHandles;
 	
 	UPROPERTY()
-	TArray<FGameplayAbilitySpec> CachePressedSpecs;
+	TArray<FGameplayAbilitySpecHandle> CachePressedHandles;
 	
 	UPROPERTY()
-	TArray<FGameplayAbilitySpec> CacheHeldSpecs;
+	TArray<FGameplayAbilitySpecHandle> CacheHeldHandles;
+	
+	FDAbilityReplicatedPayloadContainer AbilityReplicatedPayloadContainer;
 };
 
 #define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \

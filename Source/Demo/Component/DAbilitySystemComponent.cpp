@@ -6,7 +6,6 @@
 #include "Global/GlobalTags.h"
 #include "Global/Statics.h"
 #include "Player/DPlayerState.h"
-#include "Player/HeroPlayerState.h"
 
 void UDAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
@@ -37,6 +36,138 @@ void UDAbilitySystemComponent::OnPlayerControllerSet()
 	}
 }
 
+void UDAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled)
+{
+	if (IsValid(Ability))
+	{
+		if (Ability->IsInstantiated())
+		{
+			const FGameplayAbilityActivationInfo ActivationInfo = Ability->GetCurrentActivationInfo();
+			AbilityReplicatedPayloadContainer.Remove(FGameplayAbilitySpecHandleAndPredictionKey(Handle, ActivationInfo.GetActivationPredictionKey()));
+		}
+	}
+	else
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
+	}
+	
+	Super::NotifyAbilityEnded(Handle, Ability, bWasCancelled);
+}
+
+void UDAbilitySystemComponent::ConsumeReplicatedPayload(const FGameplayTag& Tag, const FGameplayAbilitySpecHandle& Handle, const FPredictionKey& Key) const
+{
+	const TSharedPtr<FAbilityReplicatedPayloadCache> Cache = AbilityReplicatedPayloadContainer.Find(FGameplayAbilitySpecHandleAndPredictionKey(Handle, Key));
+	if (!Cache.IsValid())
+	{
+		return;
+	}
+	
+	if (FAbilityReplicatedPayload* Data = Cache->TagEvents.Find(Tag))
+	{
+		Data->bTriggered = false;
+	}
+}
+
+FGameplayTag UDAbilitySystemComponent::GetReplicatedPayloadTag(
+	const FGameplayTag& Tag,
+	const FGameplayAbilitySpecHandle& Handle,
+	const FPredictionKey& Key) const
+{
+	const TSharedPtr<FAbilityReplicatedPayloadCache> Cache = AbilityReplicatedPayloadContainer.Find(
+		FGameplayAbilitySpecHandleAndPredictionKey(Handle, Key));
+	
+	if (Cache.IsValid())
+	{
+		if (const FAbilityReplicatedPayload* Payload = Cache->TagEvents.Find(Tag))
+		{
+			return Payload->PayloadTag;
+		}
+	}
+	
+	return FGameplayTag::EmptyTag;
+}
+
+void UDAbilitySystemComponent::InvokeReplicatedPayload(
+	const FGameplayTag& Tag,
+	const FGameplayAbilitySpecHandle& Handle,
+	const FPredictionKey& AbilityOriginalPredictionKey,
+	const FPredictionKey& CurrentPredictionKey,
+	const FGameplayTag& PayloadTag)
+{
+	const TSharedRef<FAbilityReplicatedPayloadCache> Cache = AbilityReplicatedPayloadContainer.FindOrAdd(
+		FGameplayAbilitySpecHandleAndPredictionKey(Handle, AbilityOriginalPredictionKey));
+	
+	Cache->PredictionKey = CurrentPredictionKey;
+	if (FAbilityReplicatedPayload* Data = Cache->TagEvents.Find(Tag))
+	{
+		Data->bTriggered = true;
+		Data->PayloadTag = PayloadTag;
+		if (Data->Delegate.IsBound())
+		{
+			Data->Delegate.Broadcast();
+		}
+	}
+}
+
+void UDAbilitySystemComponent::ServerSetReplicatedPayload_Implementation(
+	const FGameplayTag& Tag,
+	const FGameplayAbilitySpecHandle& Handle,
+	const FPredictionKey& AbilityOriginalPredictionKey,
+	const FPredictionKey& CurrentPredictionKey,
+	const FGameplayTag& PayloadTag)
+{
+	FScopedPredictionWindow Scoped(this, CurrentPredictionKey);
+	
+	InvokeReplicatedPayload(Tag, Handle, AbilityOriginalPredictionKey, CurrentPredictionKey, PayloadTag);
+}
+
+bool UDAbilitySystemComponent::ServerSetReplicatedPayload_Validate(
+	const FGameplayTag& Tag,
+	const FGameplayAbilitySpecHandle& Handle,
+	const FPredictionKey& AbilityOriginalPredictionKey,
+	const FPredictionKey& CurrentPredictionKey,
+	const FGameplayTag& PayloadTag)
+{
+	return true;
+}
+
+bool UDAbilitySystemComponent::CallReplicatedEventDelegateIfSet(
+	const FGameplayTag& Tag,
+	const FGameplayAbilitySpecHandle& Handle,
+	const FPredictionKey& Key) const
+{
+	const TSharedPtr<FAbilityReplicatedPayloadCache> Cache = AbilityReplicatedPayloadContainer.Find(
+		FGameplayAbilitySpecHandleAndPredictionKey(Handle, Key));
+
+	if (Cache.IsValid())
+	{
+		if (const FAbilityReplicatedPayload* Data = Cache->TagEvents.Find(Tag))
+		{
+			if (Data->bTriggered)
+			{
+				Data->Delegate.Broadcast();
+				return true;
+			}
+		}
+	}
+	
+	return false;
+}
+
+FSimpleMulticastDelegate& UDAbilitySystemComponent::AbilityReplicatedPayloadDelegate(
+	const FGameplayTag& Tag,
+	const FGameplayAbilitySpecHandle& Handle,
+	const FPredictionKey& Key)
+{
+	const TSharedRef<FAbilityReplicatedPayloadCache> Cache = AbilityReplicatedPayloadContainer.FindOrAdd(
+		FGameplayAbilitySpecHandleAndPredictionKey(Handle, Key));
+
+	FAbilityReplicatedPayload* Payload = Cache->TagEvents.Find(Tag);
+	checkf(Payload, TEXT("Invalid Replicated Payload, Tag: [%s]"), *Tag.ToString());
+	
+	return Payload->Delegate;
+}
+
 void UDAbilitySystemComponent::ProcessAbilityInput()
 {
 	
@@ -54,27 +185,13 @@ void UDAbilitySystemComponent::AbilityForInputTrigger(FGameplayTag InputTag)
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid InputTag"), __FUNCTION__));
 		return;
 	}
-	
-	FGameplayEventData Data;
-	Data.InstigatorTags.AddTag(InputTag);
-	HandleGameplayEvent(GlobalTags::AbilityInputPressTag, &Data);
-	
-	ABILITYLIST_SCOPE_LOCK()
-	for (FGameplayAbilitySpec& Spec: ActivatableAbilities.Items)
+
+	for (const FGameplayAbilitySpecHandle& Handle : CachePressedHandles)
 	{
-		if (!Spec.GetDynamicSpecSourceTags().HasTagExact(InputTag) || IsValid(Spec.Ability))
+		FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
+		if (!Spec)
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid InputTag: %s"), __FUNCTION__, *InputTag.ToString()));
 			continue;
-		}
-		
-		if (Spec.GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityActivationInputPressedTag))
-		{
-			InputTriggerHandles.Add(Spec.Handle);
-		}
-		else if (Spec.GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityActivationInputHeldTag))
-		{
-			InputStartHandles.Add(Spec.Handle);
 		}
 	}
 }
@@ -106,7 +223,7 @@ void UDAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
 {
 	Super::OnGiveAbility(AbilitySpec);
 
-	const AHeroPlayerState* PS = Cast<AHeroPlayerState>(GetOwner());
+	const ADPlayerState* PS = Cast<ADPlayerState>(GetOwner());
 	if (!IsValid(PS))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid ADPlayerState"), __FUNCTION__));
@@ -120,10 +237,27 @@ void UDAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
 	
 	if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityActivationInputPressedTag))
 	{
-		CachePressedSpecs.Add(AbilitySpec);
+		CachePressedHandles.Add(AbilitySpec.Handle);
 	}
 	else if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityActivationInputHeldTag))
 	{
-		CacheHeldSpecs.Add(AbilitySpec);
+		CacheHeldHandles.Add(AbilitySpec.Handle);
 	}
+}
+
+void UDAbilitySystemComponent::InternalServerTryActivateAbility(
+	FGameplayAbilitySpecHandle Handle,
+	bool InputPressed,
+	const FPredictionKey& PredictionKey,
+	const FGameplayEventData* TriggerEventData)
+{
+	const TSharedPtr<FAbilityReplicatedPayloadCache> Cache = AbilityReplicatedPayloadContainer.Find(
+		FGameplayAbilitySpecHandleAndPredictionKey(Handle, PredictionKey));
+	
+	if (Cache.IsValid())
+	{
+		Cache->Reset();
+	}
+	
+	Super::InternalServerTryActivateAbility(Handle, InputPressed, PredictionKey, TriggerEventData);
 }

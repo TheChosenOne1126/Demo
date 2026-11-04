@@ -26,7 +26,7 @@ namespace UnLua
     /**
      * Traits class which tests if a type is constructible
      */
-    template <class T, class... Args> struct TIsConstructible { enum { Value = std::is_constructible<T, Args...>::value }; };
+    template <class T, class... Args> struct TIsConstructible_UnLua { enum { Value = std::is_constructible<T, Args...>::value }; };
     template <class T> struct TIsCopyConstructible { enum { Value = std::is_copy_constructible<T>::value }; };
     template <class T> struct TIsDestructible { enum { Value = std::is_destructible<T>::value }; };
 

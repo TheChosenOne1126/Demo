@@ -1037,7 +1037,7 @@ namespace UnLua
     template <bool bIsReflected, typename ClassType, typename... CtorArgType>
     void TExportedClass<bIsReflected, ClassType, CtorArgType...>::AddDefaultFunctions(FFalse NotReflected)
     {
-        AddConstructor(typename TChooseClass<TIsConstructible<ClassType, CtorArgType...>::Value, FTrue, FFalse>::Result());
+        AddConstructor(typename TChooseClass<TIsConstructible_UnLua<ClassType, CtorArgType...>::Value, FTrue, FFalse>::Result());
         AddDestructor(typename TChooseClass<TAnd<TIsDestructible<ClassType>, TNot<TIsTriviallyDestructible<ClassType>>>::Value, FFalse, FTrue>::Result());
     }
 
@@ -1053,7 +1053,7 @@ namespace UnLua
         int32 NumArgs = sizeof...(CtorArgType);
         if (NumArgs > 0)
         {
-            AddConstructor(typename TChooseClass<TIsConstructible<ClassType, CtorArgType...>::Value, FTrue, FFalse>::Result());
+            AddConstructor(typename TChooseClass<TIsConstructible_UnLua<ClassType, CtorArgType...>::Value, FTrue, FFalse>::Result());
         }
     }
 

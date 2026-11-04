@@ -7,26 +7,28 @@
 #include "GameplayTagContainer.h"
 #include "Abilities/GameplayAbilityTypes.h"
 
-struct FDAbilityReplicatedData
+struct FAbilityReplicatedPayload
 {
-	FDAbilityReplicatedData() : bTriggered(false), TagPayload(FGameplayTag::EmptyTag) {}
+	FAbilityReplicatedPayload() : bTriggered(false), PayloadTag(FGameplayTag::EmptyTag) {}
 
 	bool bTriggered;
 
-	FGameplayTag TagPayload;
+	FGameplayTag PayloadTag;
 
 	FSimpleMulticastDelegate Delegate;
+	
+	static FSimpleMulticastDelegate EmptyDelegate;
 };
 
-struct FDAbilityReplicatedDataCache
+struct FAbilityReplicatedPayloadCache
 {
 	FPredictionKey PredictionKey;
 	
-	TMap<FGameplayTag, FDAbilityReplicatedData> TagEvents;
+	TMap<FGameplayTag, FAbilityReplicatedPayload> TagEvents;
 	
-	FDAbilityReplicatedDataCache() {}
+	FAbilityReplicatedPayloadCache() {}
 	
-	virtual ~FDAbilityReplicatedDataCache() { }
+	virtual ~FAbilityReplicatedPayloadCache() { }
 	
 	void Reset()
 	{
@@ -34,7 +36,7 @@ struct FDAbilityReplicatedDataCache
 		for (auto& [Tag, Data] : TagEvents)
 		{
 			Data.bTriggered = false;
-			Data.TagPayload = FGameplayTag::EmptyTag;
+			Data.PayloadTag = FGameplayTag::EmptyTag;
 		}
 	}
 
@@ -48,18 +50,16 @@ struct FDAbilityReplicatedDataCache
 	}
 };
 
-struct FDAbilityReplicatedDataContainer
+struct FDAbilityReplicatedPayloadContainer
 {
-	TSharedPtr<FDAbilityReplicatedDataCache> Find(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey) const;
+	TSharedPtr<FAbilityReplicatedPayloadCache> Find(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey) const;
 	
-	TSharedRef<FDAbilityReplicatedDataCache> FindOrAdd(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey);
+	TSharedRef<FAbilityReplicatedPayloadCache> FindOrAdd(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey);
 
 	void Remove(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey);
-	
-	void PrintDebug();
 
 private:
-	TArray<TPair<FGameplayAbilitySpecHandleAndPredictionKey, TSharedRef<FDAbilityReplicatedDataCache>>> InUseData;
+	TArray<TPair<FGameplayAbilitySpecHandleAndPredictionKey, TSharedRef<FAbilityReplicatedPayloadCache>>> InUseData;
 	
-	TArray<TSharedRef<FDAbilityReplicatedDataCache>> FreeData;
+	TArray<TSharedRef<FAbilityReplicatedPayloadCache>> FreeData;
 };

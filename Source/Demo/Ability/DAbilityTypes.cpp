@@ -2,7 +2,7 @@
 
 #include "DAbilityTypes.h"
 
-TSharedPtr<FDAbilityReplicatedDataCache> FDAbilityReplicatedDataContainer::Find(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey) const
+TSharedPtr<FAbilityReplicatedPayloadCache> FDAbilityReplicatedPayloadContainer::Find(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey) const
 {
 	for (auto& [HandleAndKey, DataCache] : InUseData)
 	{
@@ -12,20 +12,20 @@ TSharedPtr<FDAbilityReplicatedDataCache> FDAbilityReplicatedDataContainer::Find(
 		}
 	}
 	
-	return TSharedPtr<FDAbilityReplicatedDataCache>();
+	return TSharedPtr<FAbilityReplicatedPayloadCache>();
 }
 
-TSharedRef<FDAbilityReplicatedDataCache> FDAbilityReplicatedDataContainer::FindOrAdd(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey)
+TSharedRef<FAbilityReplicatedPayloadCache> FDAbilityReplicatedPayloadContainer::FindOrAdd(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey)
 {
-	TSharedPtr<FDAbilityReplicatedDataCache> SharedPtr = Find(InHandleAndKey);
+	TSharedPtr<FAbilityReplicatedPayloadCache> SharedPtr = Find(InHandleAndKey);
 	if (SharedPtr.IsValid())
 	{
 		return SharedPtr.ToSharedRef();
 	}
 	
-	for (int32 i = FreeData.Num()-1; i >= 0; --i)
+	for (int32 i = 0; i < FreeData.Num(); i++)
 	{
-		TSharedRef<FDAbilityReplicatedDataCache>& FreeRef = FreeData[i];
+		TSharedRef<FAbilityReplicatedPayloadCache>& FreeRef = FreeData[i];
 		if (FreeRef.IsUnique())
 		{
 			SharedPtr = FreeRef;
@@ -38,18 +38,26 @@ TSharedRef<FDAbilityReplicatedDataCache> FDAbilityReplicatedDataContainer::FindO
 
 	if (!SharedPtr.IsValid())
 	{
-		SharedPtr = MakeShared<FDAbilityReplicatedDataCache>();
+		SharedPtr = MakeShared<FAbilityReplicatedPayloadCache>();
 	}
 
-	TSharedRef<FDAbilityReplicatedDataCache> SharedRef = SharedPtr.ToSharedRef();
+	TSharedRef<FAbilityReplicatedPayloadCache> SharedRef = SharedPtr.ToSharedRef();
 	InUseData.Emplace(InHandleAndKey, SharedRef);
 	return SharedRef;
 }
 
-void FDAbilityReplicatedDataContainer::Remove(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey)
+void FDAbilityReplicatedPayloadContainer::Remove(const FGameplayAbilitySpecHandleAndPredictionKey& InHandleAndKey)
 {
-}
-
-void FDAbilityReplicatedDataContainer::PrintDebug()
-{
+	for (int32 i = 0; i < InUseData.Num(); ++i)
+	{
+		if (InHandleAndKey == InUseData[i].Key)
+		{
+			TSharedRef<FAbilityReplicatedPayloadCache>& RemovedRef = InUseData[i].Value;
+			
+			FreeData.Emplace(RemovedRef);
+			
+			InUseData.RemoveAtSwap(i, EAllowShrinking::No);
+			break;
+		}
+	}
 }
