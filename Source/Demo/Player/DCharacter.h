@@ -3,8 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemInterface.h"
-#include "GameplayTagContainer.h"
 #include "GameFramework/Character.h"
 #include "DCharacter.generated.h"
 
@@ -14,13 +12,7 @@ class DEMO_API ADCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PossessedBy(AController* NewController) override;
 
-	void SetPawnTag(const FGameplayTag& NewPawnTag);
-	
-	const FGameplayTag& GetPawnTag() const;
-	
-protected:
-	UPROPERTY(Replicated)
-	FGameplayTag PawnTag;
+	virtual void OnRep_PlayerState() override;
 };

@@ -8,7 +8,7 @@
 #include "MontageDataAsset.generated.h"
 
 USTRUCT(BlueprintType)
-struct FMontageData
+struct FMontageType
 {
 	GENERATED_BODY()
 	
@@ -26,5 +26,9 @@ class DEMO_API UMontageDataAsset : public UDataAsset
 	
 public:
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FGameplayTag, TObjectPtr<UAnimMontage>> MontageDataMap;
+	TArray<FMontageType> MontageTypes;
+	
+#if WITH_EDITOR
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+#endif
 };

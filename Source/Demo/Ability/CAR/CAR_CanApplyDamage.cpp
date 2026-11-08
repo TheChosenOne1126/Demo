@@ -13,7 +13,7 @@ bool UCAR_CanApplyDamage::CanApplyGameplayEffect_Implementation(
 {
 	FGameplayTagContainer GrantedTags;
 	Spec.GetAllGrantedTags(GrantedTags);
-	if (GrantedTags.HasTagExact(GlobalTags::EffectDamageNormalAttackTag))
+	if (GrantedTags.HasTagExact(GlobalTags::GE_ATTACK_NORMAL))
 	{
 		return true;
 	}

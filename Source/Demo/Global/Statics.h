@@ -40,5 +40,8 @@ public:
 	static UDAbilitySystemComponent* GetAscFromActor(AActor* Actor);
 	
 	UFUNCTION(BlueprintPure, Category = "Asset")
-	static bool GetPawnData(FGameplayTag Tag, FPawnData& PawnData);
+	static bool GetPlayerType(const FGameplayTag& Tag, FPlayerType& OutPlayerType);
+	
+	UFUNCTION(BlueprintPure, Category = "Asset")
+	static bool GetPawnType(const FGameplayTag& Tag, FPawnType& OutPawnType);
 };

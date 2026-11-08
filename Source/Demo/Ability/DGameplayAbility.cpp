@@ -56,7 +56,7 @@ void UDGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, 
 		return;
 	}
 
-	if (!Spec.GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityActivationAutoTag))
+	if (!Spec.GetDynamicSpecSourceTags().HasTagExact(GlobalTags::GA_PASSIVE))
 	{
 		return;
 	}
@@ -110,7 +110,7 @@ void UDGameplayAbility::ApplyCooldown(
 	
 	EffectSpecHandle.Data->DynamicGrantedTags.AppendTags(CooldownTags);
 	const float Magnitude = LuaObtainCooldownMagnitude();
-	EffectSpecHandle.Data->SetSetByCallerMagnitude(GlobalTags::SetByCallerCooldownValueTag, Magnitude);
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(GlobalTags::SETBYCALLER_GA_COOLDOWN, Magnitude);
 	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, EffectSpecHandle);
 }
 

@@ -7,21 +7,24 @@
 #include "Engine/DataAsset.h"
 #include "AbilityDataAsset.generated.h"
 
+class UDGameplayAbility;
 class UGameplayEffect;
-class UGameplayAbility;
 
 USTRUCT(BlueprintType)
-struct FAbilityData
+struct FAbilityType
 {
 	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = false))
+	TSubclassOf<UDGameplayAbility> AbilityClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	int32 InitialAbilityLevel = 0;
+	int32 OriLv = 0;
 
 	UPROPERTY(EditDefaultsOnly)
-	int32 MaxAbilityLevel = 0;
+	int32 MaxLv = 0;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta = (Categories = "InputTag, GA"))
 	FGameplayTagContainer Tags;
 };
 
@@ -31,9 +34,13 @@ class DEMO_API UAbilityDataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
- 	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = false))
-	TMap<TSubclassOf<UGameplayAbility>, FAbilityData> AbilityDataMap;
+ 	UPROPERTY(EditDefaultsOnly)
+	TArray<FAbilityType> AbilityTypes;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UGameplayEffect> InitialEffectClass;
+	TSubclassOf<UGameplayEffect> OriGEClass;
+	
+#if WITH_EDITOR
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+#endif
 };

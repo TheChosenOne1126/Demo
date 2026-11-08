@@ -14,9 +14,12 @@ class UAbilityDataAsset;
 class ADCharacter;
 
 USTRUCT(BlueprintType)
-struct FPawnData
+struct FPawnType
 {
 	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, meta = (Categories = "Pawn"))
+	FGameplayTag Tag;
 	
 	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = "false"))
 	TSubclassOf<ADCharacter> PawnClass;
@@ -25,14 +28,20 @@ struct FPawnData
 	TObjectPtr<UAbilityDataAsset> AbilityDataAsset;
 
 	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = "false"))
-	TObjectPtr<UInputDataAsset> InputDataAsset;
-
-	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = "false"))
 	TObjectPtr<UMontageDataAsset> MontageDataAsset;
 };
 
+USTRUCT()
+struct FPlayerType : public FPawnType
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = "false"))
+	TObjectPtr<UInputDataAsset> InputDataAsset;
+};
+
 USTRUCT(BlueprintType)
-struct FGameplayEffectData
+struct FGameplayEffectType
 {
 	GENERATED_BODY()
 	
@@ -43,6 +52,18 @@ struct FGameplayEffectData
 	FGameplayTag Tag;
 };
 
+USTRUCT(BlueprintType)
+struct FCameraModifierType
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, meta = (Categories = "CameraModifier"))
+	FGameplayTag Tag;
+	
+	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = "false"))
+	TSubclassOf<UCameraModifier> CameraModifierClass;
+};
+
 UCLASS()
 class DEMO_API UGameDataAsset : public UPrimaryDataAsset
 {
@@ -50,11 +71,18 @@ class DEMO_API UGameDataAsset : public UPrimaryDataAsset
 
 public:
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FGameplayTag, FPawnData> PawnDataMap;
+	TArray<FPawnType> PawnTypes;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FGameplayTag, TSubclassOf<UGameplayEffect>> GameplayEffectMap;
+	TArray<FPlayerType> PlayerTypes;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FGameplayTag, TSubclassOf<UCameraModifier>> CameraModifierMap;
+	TArray<FGameplayEffectType> GameplayEffectTypes;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FCameraModifierType> CameraModifierTypes;
+	
+#if WITH_EDITOR
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+#endif
 };

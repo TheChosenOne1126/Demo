@@ -143,7 +143,7 @@ UDAbilitySystemComponent* UStatics::GetAscFromActor(AActor* Actor)
 	return Asc;
 }
 
-bool UStatics::GetPawnData(FGameplayTag Tag, FPawnData& PawnData)
+bool UStatics::GetPlayerType(const FGameplayTag& Tag, FPlayerType& OutPlayerType)
 {
 	const UDAssetManager& AssetManager = UDAssetManager::Get();
 	
@@ -160,13 +160,51 @@ bool UStatics::GetPawnData(FGameplayTag Tag, FPawnData& PawnData)
 		return false;
 	}
 
-	const FPawnData* FoundData = GameDataAsset->PawnDataMap.Find(Tag);
-	if (!FoundData)
+	const FPlayerType* PlayerType = GameDataAsset->PlayerTypes.FindByPredicate(
+		[Tag](const FPlayerType& InType) -> bool
+		{
+			return Tag.MatchesTagExact(InType.Tag);
+		});
+	
+	if (!PlayerType)
+	{
+		Log(&AssetManager, ELogType::Error, FString::Printf(TEXT("%hs: invalid PlayerData"), __FUNCTION__));
+		return false;
+	}
+	
+	OutPlayerType = *PlayerType;
+	return true;
+}
+
+bool UStatics::GetPawnType(const FGameplayTag& Tag, FPawnType& OutPawnType)
+{
+	const UDAssetManager& AssetManager = UDAssetManager::Get();
+	
+	if (!Tag.IsValid())
+	{
+		Log(&AssetManager, ELogType::Error, FString::Printf(TEXT("%hs: invalid Tag"), __FUNCTION__));
+		return false;
+	}
+	
+	UGameDataAsset* GameDataAsset = AssetManager.GetGameDataAsset();
+	if (!IsValid(GameDataAsset))
+	{
+		Log(&AssetManager, ELogType::Error, FString::Printf(TEXT("%hs: invalid GameDataAsset"), __FUNCTION__));
+		return false;
+	}
+
+	const FPawnType* PawnType = GameDataAsset->PawnTypes.FindByPredicate(
+		[Tag](const FPawnType& InType) -> bool
+		{
+			return Tag.MatchesTagExact(InType.Tag);
+		});
+	
+	if (!PawnType)
 	{
 		Log(&AssetManager, ELogType::Error, FString::Printf(TEXT("%hs: invalid PawnData"), __FUNCTION__));
 		return false;
 	}
 	
-	PawnData = *FoundData;
+	OutPawnType = *PawnType;
 	return true;
 }

@@ -8,9 +8,6 @@
 #include "Ability/DAbilityTypes.h"
 #include "DAbilitySystemComponent.generated.h"
 
-struct FAbilityData;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegatePlayerControllerSet, APlayerController*, PlayerController);
-
 UCLASS()
 class DEMO_API UDAbilitySystemComponent : public UAbilitySystemComponent, public IUnLuaInterface
 {
@@ -21,8 +18,6 @@ public:
 	
 	virtual FString GetModuleName_Implementation() const override;
 
-	virtual void OnPlayerControllerSet() override;
-
 	virtual void NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled) override;
 
 	void ConsumeReplicatedPayload(const FGameplayTag& Tag, const FGameplayAbilitySpecHandle& Handle, const FPredictionKey& Key) const;
@@ -31,17 +26,17 @@ public:
 	
 	void InvokeReplicatedPayload(
 		const FGameplayTag& Tag,
+		const FGameplayTag& PayloadTag,
 		const FGameplayAbilitySpecHandle& Handle,
 		const FPredictionKey& AbilityOriginalPredictionKey,
-		const FPredictionKey& CurrentPredictionKey,
-		const FGameplayTag& PayloadTag);
+		const FPredictionKey& CurrentPredictionKey = FPredictionKey());
 	
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetReplicatedPayload(const FGameplayTag& Tag,
+		const FGameplayTag& PayloadTag,
 		const FGameplayAbilitySpecHandle& Handle,
 		const FPredictionKey& AbilityOriginalPredictionKey,
-		const FPredictionKey& CurrentPredictionKey,
-		const FGameplayTag& PayloadTag);
+		const FPredictionKey& CurrentPredictionKey);
 	
 	bool CallReplicatedEventDelegateIfSet(const FGameplayTag& Tag, const FGameplayAbilitySpecHandle& Handle, const FPredictionKey& Key) const;
 	
@@ -52,21 +47,13 @@ public:
 	
 	void ProcessAbilityInput();
 	
-	void AbilityForInputStart(FGameplayTag InputTag);
+	void AbilityForInputStart(const FGameplayTag& InputTag);
 	
-	void AbilityForInputTrigger(FGameplayTag InputTag);
+	void AbilityForInputTrigger(const FGameplayTag& InputTag);
 	
-	void AbilityForInputCancel(FGameplayTag InputTag);
-	
-	UFUNCTION()
-	void GiveAbilityWithData(TSubclassOf<UGameplayAbility> AbilityClass, const FAbilityData& Data);
-	
-	UPROPERTY()
-	FDelegatePlayerControllerSet PlayerControllerSet;
-	
+	void AbilityForInputCancel(const FGameplayTag& InputTag);
+
 protected:
-	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
-	
 	virtual void InternalServerTryActivateAbility(
 		FGameplayAbilitySpecHandle Handle,
 		bool InputPressed,
@@ -75,16 +62,13 @@ protected:
 	
 private:
 	UPROPERTY()
-	TArray<FGameplayAbilitySpecHandle> InputTriggerHandles;
+	TMap<FGameplayAbilitySpecHandle, FGameplayTag> InputStartHandleToTagMap;
 	
 	UPROPERTY()
-	TArray<FGameplayAbilitySpecHandle> InputStartHandles;
+	TMap<FGameplayAbilitySpecHandle, FGameplayTag> InputTriggerHandleToTagMap;
 	
 	UPROPERTY()
-	TArray<FGameplayAbilitySpecHandle> CachePressedHandles;
-	
-	UPROPERTY()
-	TArray<FGameplayAbilitySpecHandle> CacheHeldHandles;
+	TMap<FGameplayAbilitySpecHandle, FGameplayTag> InputCancelHandleToTagMap;
 	
 	FDAbilityReplicatedPayloadContainer AbilityReplicatedPayloadContainer;
 };

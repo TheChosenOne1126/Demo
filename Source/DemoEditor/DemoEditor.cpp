@@ -136,15 +136,14 @@ void FDemoEditorModule::ExportGameplayTagsToLua()
 	SlowTask.EnterProgressFrame(1, LOCTEXT("GeneratingLuaContent", "Generating Lua content..."));
 
 	FString LuaContent = TEXT("--- Auto-generated GameplayTags ---\n");
-	LuaContent += TEXT("local RequestGameplayTag = UE.FGameplayTag.RequestGameplayTag\n");
-	LuaContent += TEXT("local GameplayTags = {\n");
+	LuaContent += TEXT("local GameplayTagTb = {\n");
     	
 	for (int i = 0; i < ProjectTags.Num(); ++i)
 	{
 		FString SafeName = ProjectTags[i].ToString().Replace(TEXT("."), TEXT("_"));
 		SafeName = SafeName.Replace(TEXT("("), TEXT("_"));
 		SafeName = SafeName.Replace(TEXT(")"), TEXT(""));
-		LuaContent += FString::Printf(TEXT("    %s = RequestGameplayTag(\"%s\")"), *SafeName, *ProjectTags[i].ToString());
+		LuaContent += FString::Printf(TEXT("    %s = UE.FGameplayTag(\"%s\")"), *SafeName, *ProjectTags[i].ToString());
     
 		if (i < ProjectTags.Num() - 1)
 		{
@@ -154,15 +153,15 @@ void FDemoEditorModule::ExportGameplayTagsToLua()
 	}
     	
 	LuaContent += TEXT("}\n");
-	LuaContent += TEXT("return GameplayTags");
+	LuaContent += TEXT("return GameplayTagTb");
 
 	if (SlowTask.ShouldCancel())
 		return;
 
 	// Step 3: Save file
-	SlowTask.EnterProgressFrame(1, LOCTEXT("SavingLuaFile", "Saving GameplayTags.lua..."));
+	SlowTask.EnterProgressFrame(1, LOCTEXT("SavingLuaFile", "Saving GameplayTagTb.lua..."));
 
-	const FString FilePath = FPaths::ProjectContentDir() / TEXT("Script/GameplayTags.lua");
+	const FString FilePath = FPaths::ProjectContentDir() / TEXT("Script/GameplayTagTb.lua");
     
 	if (FFileHelper::SaveStringToFile(LuaContent, *FilePath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
 	{

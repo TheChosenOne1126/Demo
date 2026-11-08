@@ -18,8 +18,7 @@ APawn* ADGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* NewPl
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("SpawnDefaultPawnAtTransform: Failed to spawn Pawn of type %s at %s"),
 			*GetNameSafe(PawnClass), *SpawnTransform.ToHumanReadableString()));
 	}
-
-	ResultPawn->SetPawnTag(DefaultPawnTag);
+	
 	return ResultPawn;
 }
 

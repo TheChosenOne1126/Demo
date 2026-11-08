@@ -15,7 +15,7 @@ struct FInputType
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta = (Categories = "InputTag"))
 	FGameplayTag InputTag;
 	
 	UPROPERTY(EditDefaultsOnly)
@@ -27,8 +27,8 @@ struct FAbilityInputType : public FInputType
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag ActivationTag;
+	UPROPERTY(EditDefaultsOnly, meta = (Categories = "GA.Input"))
+	FGameplayTag InputTriggerTag;
 };
 
 USTRUCT(BlueprintType)
@@ -36,7 +36,7 @@ struct FInputMapType
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, meta = (Categories = "InputMappingContext"))
 	FGameplayTag Tag;
 
 	UPROPERTY(EditDefaultsOnly)

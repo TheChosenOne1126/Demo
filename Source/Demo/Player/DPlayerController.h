@@ -7,13 +7,11 @@
 #include "InputActionValue.h"
 #include "UnLuaInterface.h"
 #include "GameFramework/PlayerController.h"
+#include "Interface/PawnTagInterface.h"
 #include "DPlayerController.generated.h"
 
-class UDAbilitySystemComponent;
-class UHUDWidget;
-
 UCLASS()
-class DEMO_API ADPlayerController : public APlayerController, public IUnLuaInterface
+class DEMO_API ADPlayerController : public APlayerController, public IUnLuaInterface, public IPawnTagInterface
 {
 	GENERATED_BODY()
 
@@ -30,23 +28,28 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void K2_OnClientPostLogin();
 	
-	UFUNCTION()
-	void OnRep_PlayerTag();
+	virtual FGameplayTag GetPawnTag() const override;
 	
-	void SetPlayerTag(const FGameplayTag& NewTag);
+	virtual void SetPawnTag(const FGameplayTag& NewPawnTag) override;
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetPlayerTag(const FGameplayTag& NewPlayerTag);
 	
 protected:
 	void OnNativeInput(const FInputActionValue& Value, const FGameplayTag& Tag);
 	
-	void OnMoveInput(const FInputActionValue& Value);
+	void OnMoveInput(const FInputActionValue& Value) const;
 	
 	void OnLookInput(const FInputActionValue& Value);
 	
-	void OnAbilityTrigger(const FGameplayTag& Tag);
+	void OnAbilityTrigger(const FGameplayTag& Tag) const;
 	
-	void OnAbilityStart(const FGameplayTag& Tag);
+	void OnAbilityStart(const FGameplayTag& Tag) const;
 	
-	void OnAbilityCancel(const FGameplayTag& Tag);
+	void OnAbilityCancel(const FGameplayTag& Tag) const;
+	
+	UFUNCTION()
+	void OnRep_PlayerTag();
 	
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerTag)

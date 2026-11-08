@@ -55,8 +55,8 @@ void UAbilityTask_WaitReplicatedPayload::OnTriggerPayload()
 	const FGameplayTag PayloadTag = Asc->GetReplicatedPayloadTag(Tag, GetAbilitySpecHandle(), GetActivationPredictionKey());
 	if (IsPredictingClient())
 	{
-		Asc->ServerSetReplicatedPayload(Tag, GetAbilitySpecHandle(),
-			GetActivationPredictionKey(), Asc->ScopedPredictionKey, PayloadTag);
+		Asc->ServerSetReplicatedPayload(Tag, PayloadTag, GetAbilitySpecHandle(),
+			GetActivationPredictionKey(), Asc->ScopedPredictionKey);
 	}
 	else
 	{

@@ -74,7 +74,7 @@ bool UInputDataAsset::ValidateInputMapTypes(FDataValidationContext& Context) con
 	
 		bool bIsAlreadyInSet;
 		TagSet.Emplace(InputMapType.Tag, &bIsAlreadyInSet);
-		if (!bIsAlreadyInSet)
+		if (bIsAlreadyInSet)
 		{
 			Context.AddError(FText::Format(INVTEXT("InputMapTypes Duplicate Tag: {1}"),
 				FText::FromString(InputMapType.Tag.ToString())));
@@ -88,7 +88,7 @@ bool UInputDataAsset::ValidateInputMapTypes(FDataValidationContext& Context) con
 		}
 	
 		MappingContextSet.Emplace(InputMapType.MappingContext, &bIsAlreadyInSet);
-		if (!bIsAlreadyInSet)
+		if (bIsAlreadyInSet)
 		{
 			Context.AddError(FText::Format(INVTEXT("InputMapTypes Duplicate MappingContext: {1}"),
 				FText::FromString(GetNameSafe(InputMapType.MappingContext))));
@@ -116,7 +116,7 @@ bool UInputDataAsset::ValidateInputTypes(
 	
 	bool bIsAlreadyInSet;
 	TagSet.Emplace(InputType.InputTag, &bIsAlreadyInSet);
-	if (!bIsAlreadyInSet)
+	if (bIsAlreadyInSet)
 	{
 		Context.AddError(FText::Format(INVTEXT("{0} Duplicate Tag: {1}"),
 			FText::FromString(ErrorName), FText::FromString(InputType.InputTag.ToString())));
@@ -130,7 +130,7 @@ bool UInputDataAsset::ValidateInputTypes(
 	}
 	
 	ActionSet.Emplace(InputType.InputAction, &bIsAlreadyInSet);
-	if (!bIsAlreadyInSet)
+	if (bIsAlreadyInSet)
 	{
 		Context.AddError(FText::Format(INVTEXT("{0} Duplicate InputAction: {1}"),
 			FText::FromString(ErrorName), FText::FromString(GetNameSafe(InputType.InputAction))));

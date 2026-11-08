@@ -28,3 +28,13 @@ void ADAIController::InitPlayerState()
 		}
 	}
 }
+
+FGameplayTag ADAIController::GetPawnTag() const
+{
+	return PawnTag;
+}
+
+void ADAIController::SetPawnTag(const FGameplayTag& NewPawnTag)
+{
+	PawnTag = NewPawnTag;
+}

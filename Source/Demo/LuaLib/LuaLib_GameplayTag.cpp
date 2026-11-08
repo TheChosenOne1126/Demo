@@ -35,7 +35,7 @@ static int32 FGameplayTag_RequestGameplayTag(lua_State* L)
 }
 
 static constexpr luaL_Reg FGameplayTagLib[] = {
-	{ "RequestGameplayTag", FGameplayTag_RequestGameplayTag },
+	{ "__call", FGameplayTag_RequestGameplayTag },
 	{ nullptr, nullptr }
 };
 
@@ -82,7 +82,7 @@ static int32 FGameplayTagContainer_MakeByTable(lua_State* L)
 }
 
 static constexpr luaL_Reg FGameplayTagContainerLib[] = {
-	{"Make_Table", FGameplayTagContainer_MakeByTable},
+	{"__call", FGameplayTagContainer_MakeByTable},
 	{nullptr, nullptr}
 };
 

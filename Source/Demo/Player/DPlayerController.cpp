@@ -8,6 +8,7 @@
 #include "Global/GlobalTags.h"
 #include "Global/Statics.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 void ADPlayerController::PostProcessInput(const float DeltaTime, const bool bGamePaused)
 {
@@ -57,20 +58,20 @@ void ADPlayerController::OnRep_PlayerTag()
 		return;
 	}
 	
-	FPawnData PawnData;
-	if (!UStatics::GetPawnData(PlayerTag, PawnData))
+	FPlayerType PlayerData;
+	if (!UStatics::GetPlayerType(PlayerTag, PlayerData))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid PawnData"), __FUNCTION__));
 		return;
 	}
 	
-	if (!IsValid(PawnData.InputDataAsset))
+	if (!IsValid(PlayerData.InputDataAsset))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid InputDataAsset"), __FUNCTION__));
 		return;
 	}
 
-	for (const FInputType& InputType : PawnData.InputDataAsset->NativeInputTypes)
+	for (const FInputType& InputType : PlayerData.InputDataAsset->NativeInputTypes)
 	{
 		const FGameplayTag& Tag = InputType.InputTag;
 		if (!Tag.IsValid())
@@ -78,21 +79,22 @@ void ADPlayerController::OnRep_PlayerTag()
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputType Invalid InputTag"), __FUNCTION__));
 			continue;
 		}
-		
-		if (!IsValid(InputType.InputAction))
+
+		const UInputAction* Action = InputType.InputAction;
+		if (!IsValid(Action))
 		{
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputType Invalid InputAction"), __FUNCTION__));
 			continue;
 		}
 		
-		EIC->BindActionValueLambda(InputType.InputAction, ETriggerEvent::Triggered,
+		EIC->BindActionValueLambda(Action, ETriggerEvent::Triggered,
 			[this, Tag](const FInputActionValue& Value) -> void
 			{
 				OnNativeInput(Value, Tag);
 			});
 	}
 
-	for (const FAbilityInputType& AbilityInputType : PawnData.InputDataAsset->AbilityInputTypes)
+	for (const FAbilityInputType& AbilityInputType : PlayerData.InputDataAsset->AbilityInputTypes)
 	{
 		const FGameplayTag& Tag = AbilityInputType.InputTag;
 		if (!Tag.IsValid())
@@ -113,7 +115,7 @@ void ADPlayerController::OnRep_PlayerTag()
 				OnAbilityTrigger(Tag);
 			});
 
-		if (AbilityInputType.ActivationTag.MatchesTagExact(GlobalTags::AbilityActivationInputHeldTag))
+		if (AbilityInputType.InputTriggerTag.MatchesTagExact(GlobalTags::GA_INPUT_HELD))
 		{
 			EIC->BindActionValueLambda(AbilityInputType.InputAction, ETriggerEvent::Started,
 				[this, Tag](const FInputActionValue&) -> void
@@ -130,7 +132,12 @@ void ADPlayerController::OnRep_PlayerTag()
 	}
 }
 
-void ADPlayerController::SetPlayerTag(const FGameplayTag& NewTag)
+FGameplayTag ADPlayerController::GetPawnTag() const
+{
+	return PlayerTag;
+}
+
+void ADPlayerController::SetPawnTag(const FGameplayTag& NewPawnTag)
 {
 	if (!HasAuthority())
 	{
@@ -142,7 +149,7 @@ void ADPlayerController::SetPlayerTag(const FGameplayTag& NewTag)
 		return;
 	}
 	
-	PlayerTag = NewTag;
+	PlayerTag = NewPawnTag;
 
 	if (GetGameInstance()->IsDedicatedServerInstance())
 	{
@@ -154,19 +161,29 @@ void ADPlayerController::SetPlayerTag(const FGameplayTag& NewTag)
 	}
 }
 
+void ADPlayerController::ServerSetPlayerTag_Implementation(const FGameplayTag& NewPlayerTag)
+{
+	SetPawnTag(NewPlayerTag);
+}
+
+bool ADPlayerController::ServerSetPlayerTag_Validate(const FGameplayTag& NewPlayerTag)
+{
+	return true;
+}
+
 void ADPlayerController::OnNativeInput(const FInputActionValue& Value, const FGameplayTag& Tag)
 {
-	if (Tag.MatchesTagExact(GlobalTags::InputMoveTag))
+	if (Tag.MatchesTagExact(GlobalTags::IATAG_MOVE))
 	{
 		OnMoveInput(Value);
 	}
-	else if (Tag.MatchesTagExact(GlobalTags::InputLookMouseTag))
+	else if (Tag.MatchesTagExact(GlobalTags::IATAG_LOOKMOUSE))
 	{
 		OnLookInput(Value);
 	}
 }
 
-void ADPlayerController::OnMoveInput(const FInputActionValue& Value)
+void ADPlayerController::OnMoveInput(const FInputActionValue& Value) const
 {
 	APawn* P = GetPawn();
 	if (!IsValid(P))
@@ -204,7 +221,7 @@ void ADPlayerController::OnLookInput(const FInputActionValue& Value)
 	}
 }
 
-void ADPlayerController::OnAbilityTrigger(const FGameplayTag& Tag)
+void ADPlayerController::OnAbilityTrigger(const FGameplayTag& Tag) const
 {
 	UDAbilitySystemComponent* Asc = UStatics::GetAscFromActor(PlayerState);
 	if (!IsValid(Asc))
@@ -212,11 +229,12 @@ void ADPlayerController::OnAbilityTrigger(const FGameplayTag& Tag)
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UDAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
+
 	
 	Asc->AbilityForInputTrigger(Tag);
 }
 
-void ADPlayerController::OnAbilityStart(const FGameplayTag& Tag)
+void ADPlayerController::OnAbilityStart(const FGameplayTag& Tag) const
 {
 	UDAbilitySystemComponent* Asc = UStatics::GetAscFromActor(PlayerState);
 	if (!IsValid(Asc))
@@ -224,11 +242,11 @@ void ADPlayerController::OnAbilityStart(const FGameplayTag& Tag)
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UDAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
-	
-	Asc->AbilityForInputTrigger(Tag);
+
+	Asc->AbilityForInputStart(Tag);
 }
 
-void ADPlayerController::OnAbilityCancel(const FGameplayTag& Tag)
+void ADPlayerController::OnAbilityCancel(const FGameplayTag& Tag) const
 {
 	UDAbilitySystemComponent* Asc = UStatics::GetAscFromActor(PlayerState);
 	if (!IsValid(Asc))
@@ -237,7 +255,7 @@ void ADPlayerController::OnAbilityCancel(const FGameplayTag& Tag)
 		return;
 	}
 	
-	Asc->AbilityForInputTrigger(Tag);
+	Asc->AbilityForInputCancel(Tag);
 }
 
 void ADPlayerController::ClientPostLogin_Implementation()

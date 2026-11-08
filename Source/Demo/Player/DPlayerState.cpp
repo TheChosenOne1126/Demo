@@ -28,96 +28,6 @@ FString ADPlayerState::GetModuleName_Implementation() const
 	return TEXT("Player.PlayerState");
 }
 
-// void ADPlayerState::InitAbilitySystem(ADCharacter* Character)
-// {
-// 	if (!IsValid(Character))
-// 	{
-// 		return;
-// 	}
-//
-// 	if (!Character->GetPawnTag().IsValid())
-// 	{
-// 		return;
-// 	}
-// 	
-// 	if (!IsValid(Asc))
-// 	{
-// 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Asc"), __FUNCTION__));
-// 		return;
-// 	}
-//
-// 	if (!Asc->HasMatchingGameplayTag(GlobalTags::AbilityGivenTag))
-// 	{
-// 		const UDAssetManager& AssetManager = UDAssetManager::Get();
-//
-// 		UPawnDataAsset* PawnDataAsset = AssetManager.GetPawnDataAsset();
-// 		if (!IsValid(PawnDataAsset))
-// 		{
-// 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid PawnDataAsset"), __FUNCTION__));
-// 			return;
-// 		}
-//
-// 		if (!PawnDataAsset->PawnDataMap.Contains(Character->GetPawnTag()))
-// 		{
-// 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: PawnDataMap no contains Tag:[%s]"),
-// 				__FUNCTION__, *Character->GetPawnTag().ToString()));
-// 			return;
-// 		}
-// 		
-// 		UAbilityDataAsset* AbilityDataAsset = PawnDataAsset->PawnDataMap[Character->GetPawnTag()].AbilityDataAsset;
-// 		if (!IsValid(AbilityDataAsset))
-// 		{
-// 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityDataAsset"), __FUNCTION__));
-// 			return;
-// 		}
-//
-// 		const TSubclassOf<UGameplayEffect> EffectClass = AbilityDataAsset->InitialEffectClass;
-// 		if (!IsValid(EffectClass))
-// 		{
-// 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Initial Effect Class"), __FUNCTION__));
-// 			return;
-// 		}
-//
-// 		const FGameplayEffectSpecHandle EffectSpecHandle = Asc->MakeOutgoingSpec(EffectClass, 1.f, Asc->MakeEffectContext());
-// 		Asc->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data, Asc->GetPredictionKeyForNewAction());
-//
-// 		for (const auto& [AbilityClass, AbilityData] : AbilityDataAsset->AbilityDataMap)
-// 		{
-// 			if (!IsValid(AbilityClass))
-// 			{
-// 				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityClass"), __FUNCTION__));
-// 				continue;
-// 			}
-//
-// 			if (AbilityClass->HasAnyClassFlags(CLASS_Abstract))
-// 			{
-// 				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Abstract AbilityClass"), __FUNCTION__));
-// 				continue;
-// 			}
-//
-// 			FGameplayAbilitySpec AbilitySpec(AbilityClass, AbilityData.InitialAbilityLevel);
-// 			AbilitySpec.GetDynamicSpecSourceTags().AppendTags(AbilityData.Tags);
-//
-// 			AbilitySpec.SetByCallerTagMagnitudes.Emplace(GlobalTags::SetByCallerAbilityMaxLevelTag, AbilityData.MaxAbilityLevel);
-// 			const FGameplayAbilitySpecHandle AbilitySpecHandle = Asc->GiveAbility(AbilitySpec);
-// 		}
-//
-// 		Asc->AddLooseGameplayTag(GlobalTags::AbilityGivenTag);
-// 	}
-// 	else
-// 	{
-// 		const UBaseAttributeSet* BaseAttributeSet = Asc->GetSet<UBaseAttributeSet>();
-// 		if (!IsValid(BaseAttributeSet))
-// 		{
-// 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid BaseAttributeSet"), __FUNCTION__));
-// 			return;
-// 		}
-//
-// 		Asc->ApplyModToAttribute(UBaseAttributeSet::GetHpAttribute(), EGameplayModOp::Override, BaseAttributeSet->GetMaxHp());
-// 		Asc->ApplyModToAttribute(UBaseAttributeSet::GetMpAttribute(), EGameplayModOp::Override, BaseAttributeSet->GetMaxMp());
-// 	}
-// }
-
 void ADPlayerState::NetMulticastShowDamageNumber_Implementation(float DamageValue, FGameplayTagContainer DamageTags)
 {
 	if (UKismetSystemLibrary::IsDedicatedServer(this))
@@ -125,7 +35,7 @@ void ADPlayerState::NetMulticastShowDamageNumber_Implementation(float DamageValu
 		return;
 	}
 
-	if (DamageTags.HasTagExact(GlobalTags::EffectDamageMissTag))
+	if (DamageTags.HasTagExact(GlobalTags::GE_ATTACK_MISS))
 	{
 		// TODO: Display Missing UI
 	}

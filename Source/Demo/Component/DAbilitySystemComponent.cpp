@@ -5,7 +5,6 @@
 #include "DataAsset/AbilityDataAsset.h"
 #include "Global/GlobalTags.h"
 #include "Global/Statics.h"
-#include "Player/DPlayerState.h"
 
 void UDAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
@@ -24,16 +23,6 @@ void UDAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor
 FString UDAbilitySystemComponent::GetModuleName_Implementation() const
 {
 	return TEXT("Component.AbilitySystemComponent");
-}
-
-void UDAbilitySystemComponent::OnPlayerControllerSet()
-{
-	Super::OnPlayerControllerSet();
-	
-	if (PlayerControllerSet.IsBound() && AbilityActorInfo.IsValid())
-	{
-		PlayerControllerSet.Broadcast(AbilityActorInfo->PlayerController.Get());
-	}
 }
 
 void UDAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle Handle, UGameplayAbility* Ability, bool bWasCancelled)
@@ -89,10 +78,10 @@ FGameplayTag UDAbilitySystemComponent::GetReplicatedPayloadTag(
 
 void UDAbilitySystemComponent::InvokeReplicatedPayload(
 	const FGameplayTag& Tag,
+	const FGameplayTag& PayloadTag,
 	const FGameplayAbilitySpecHandle& Handle,
 	const FPredictionKey& AbilityOriginalPredictionKey,
-	const FPredictionKey& CurrentPredictionKey,
-	const FGameplayTag& PayloadTag)
+	const FPredictionKey& CurrentPredictionKey)
 {
 	const TSharedRef<FAbilityReplicatedPayloadCache> Cache = AbilityReplicatedPayloadContainer.FindOrAdd(
 		FGameplayAbilitySpecHandleAndPredictionKey(Handle, AbilityOriginalPredictionKey));
@@ -111,22 +100,22 @@ void UDAbilitySystemComponent::InvokeReplicatedPayload(
 
 void UDAbilitySystemComponent::ServerSetReplicatedPayload_Implementation(
 	const FGameplayTag& Tag,
+	const FGameplayTag& PayloadTag,
 	const FGameplayAbilitySpecHandle& Handle,
 	const FPredictionKey& AbilityOriginalPredictionKey,
-	const FPredictionKey& CurrentPredictionKey,
-	const FGameplayTag& PayloadTag)
+	const FPredictionKey& CurrentPredictionKey)
 {
 	FScopedPredictionWindow Scoped(this, CurrentPredictionKey);
 	
-	InvokeReplicatedPayload(Tag, Handle, AbilityOriginalPredictionKey, CurrentPredictionKey, PayloadTag);
+	InvokeReplicatedPayload(Tag, PayloadTag, Handle, AbilityOriginalPredictionKey, CurrentPredictionKey);
 }
 
 bool UDAbilitySystemComponent::ServerSetReplicatedPayload_Validate(
 	const FGameplayTag& Tag,
+	const FGameplayTag& PayloadTag,
 	const FGameplayAbilitySpecHandle& Handle,
 	const FPredictionKey& AbilityOriginalPredictionKey,
-	const FPredictionKey& CurrentPredictionKey,
-	const FGameplayTag& PayloadTag)
+	const FPredictionKey& CurrentPredictionKey)
 {
 	return true;
 }
@@ -170,78 +159,156 @@ FSimpleMulticastDelegate& UDAbilitySystemComponent::AbilityReplicatedPayloadDele
 
 void UDAbilitySystemComponent::ProcessAbilityInput()
 {
+	static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
+	AbilitiesToActivate.Reset();
 	
-}
-
-void UDAbilitySystemComponent::AbilityForInputStart(FGameplayTag InputTag)
-{
-	
-}
-
-void UDAbilitySystemComponent::AbilityForInputTrigger(FGameplayTag InputTag)
-{
-	if (!InputTag.IsValid())
+	for (auto& [Handle, Tag] : InputStartHandleToTagMap)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid InputTag"), __FUNCTION__));
-		return;
+		const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
+		if (!Spec)
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputStart invalid AbilitySpec"), __FUNCTION__));
+			return;
+		}
+		
+		if (Spec->IsActive())
+		{
+			const UGameplayAbility* Ability = Spec->GetPrimaryInstance();
+			if (!IsValid(Ability))
+			{
+				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputStart invalid Ability"), __FUNCTION__));
+				return;
+			}
+		
+			const FPredictionKey Key = Ability->GetCurrentActivationInfo().GetActivationPredictionKey();
+			InvokeReplicatedPayload(GlobalTags::GA_INPUT_START, Tag, Handle, Key);
+		}
+		else
+		{
+			AbilitiesToActivate.Emplace(Handle);
+		}
 	}
 
-	for (const FGameplayAbilitySpecHandle& Handle : CachePressedHandles)
+	for (auto& [Handle, Tag] : InputTriggerHandleToTagMap)
 	{
-		FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
+		const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
 		if (!Spec)
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputTrigger invalid AbilitySpec"), __FUNCTION__));
+			return;
+		}
+		
+		if (Spec->IsActive())
+		{
+			const UGameplayAbility* Ability = Spec->GetPrimaryInstance();
+			if (!IsValid(Ability))
+			{
+				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputTrigger invalid Ability"), __FUNCTION__));
+				return;
+			}
+		
+			const FPredictionKey Key = Ability->GetCurrentActivationInfo().GetActivationPredictionKey();
+			InvokeReplicatedPayload(GlobalTags::GA_INPUT_TRIGGER, Tag, Handle, Key);
+		}
+		else
+		{
+			AbilitiesToActivate.Emplace(Handle);
+		}
+	}
+
+	for (FGameplayAbilitySpecHandle Handle : AbilitiesToActivate)
+	{
+		TryActivateAbility(Handle);
+	}
+
+	for (auto& [Handle, Tag] : InputCancelHandleToTagMap)
+	{
+		const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
+		if (!Spec)
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputCancel invalid AbilitySpec"), __FUNCTION__));
+			return;
+		}
+		
+		if (Spec->IsActive())
+		{
+			const UGameplayAbility* Ability = Spec->GetPrimaryInstance();
+			if (!IsValid(Ability))
+			{
+				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputCancel invalid Ability"), __FUNCTION__));
+				return;
+			}
+		
+			const FPredictionKey Key = Ability->GetCurrentActivationInfo().GetActivationPredictionKey();
+			InvokeReplicatedPayload(GlobalTags::GA_INPUT_CANCEL, Tag, Handle, Key);
+		}
+	}
+	
+	InputStartHandleToTagMap.Reset();
+	InputTriggerHandleToTagMap.Reset();
+	InputCancelHandleToTagMap.Reset();
+}
+
+void UDAbilitySystemComponent::AbilityForInputStart(const FGameplayTag& InputTag)
+{
+	ABILITYLIST_SCOPE_LOCK()
+	for (const FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
+	{
+		if (!IsValid(Spec.Ability))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(
+				TEXT("%hs: invalid Ability, InputTag: [%s]"), __FUNCTION__, *InputTag.ToString()));
+			continue;
+		}
+
+		if (!Spec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
 		{
 			continue;
 		}
+		
+		InputStartHandleToTagMap.Emplace(Spec.Handle, InputTag);
 	}
 }
 
-void UDAbilitySystemComponent::AbilityForInputCancel(FGameplayTag InputTag)
+void UDAbilitySystemComponent::AbilityForInputTrigger(const FGameplayTag& InputTag)
 {
-	if (!InputTag.IsValid())
+	ABILITYLIST_SCOPE_LOCK()
+	for (const FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid InputTag"), __FUNCTION__));
-		return;
+		if (!IsValid(Spec.Ability))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(
+				TEXT("%hs: invalid Ability, InputTag: [%s]"), __FUNCTION__, *InputTag.ToString()));
+			continue;
+		}
+
+		if (!Spec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
+		{
+			continue;
+		}
+		
+		InputTriggerHandleToTagMap.Emplace(Spec.Handle, InputTag);
 	}
 }
 
-void UDAbilitySystemComponent::GiveAbilityWithData(TSubclassOf<UGameplayAbility> AbilityClass, const FAbilityData& Data)
+void UDAbilitySystemComponent::AbilityForInputCancel(const FGameplayTag& InputTag)
 {
-	if (!IsValid(AbilityClass))
+	ABILITYLIST_SCOPE_LOCK()
+	for (const FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilityClass"), __FUNCTION__));
-		return;
-	}
-	
-	FGameplayAbilitySpec Spec(AbilityClass, Data.InitialAbilityLevel);
-	Spec.GetDynamicSpecSourceTags().AppendTags(Data.Tags);
-	Spec.SetByCallerTagMagnitudes.Emplace(GlobalTags::SetByCallerAbilityMaxLevelTag, Data.MaxAbilityLevel);
-	GiveAbility(Spec);
-}
+		if (!IsValid(Spec.Ability))
+		{
+			UStatics::Log(this, ELogType::Error, FString::Printf(
+				TEXT("%hs: invalid Ability, InputTag: [%s]"), __FUNCTION__, *InputTag.ToString()));
+			continue;
+		}
 
-void UDAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
-{
-	Super::OnGiveAbility(AbilitySpec);
-
-	const ADPlayerState* PS = Cast<ADPlayerState>(GetOwner());
-	if (!IsValid(PS))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid ADPlayerState"), __FUNCTION__));
-		return;
-	}
-	
-	if (!PS->GetOwningController()->IsLocalPlayerController())
-	{
-		return;
-	}
-	
-	if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityActivationInputPressedTag))
-	{
-		CachePressedHandles.Add(AbilitySpec.Handle);
-	}
-	else if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(GlobalTags::AbilityActivationInputHeldTag))
-	{
-		CacheHeldHandles.Add(AbilitySpec.Handle);
+		if (!Spec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
+		{
+			continue;
+		}
+		
+		InputCancelHandleToTagMap.Emplace(Spec.Handle, InputTag);
 	}
 }
 
