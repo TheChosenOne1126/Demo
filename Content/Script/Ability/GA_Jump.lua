@@ -1,5 +1,5 @@
 ---@type GA_Jump
-local M = UnLua.Class("Ability.GameplayAbility")
+local M = UnLua.Class("")
 local Utils = require("Utils")
 local GameplayTags = require("GameplayTags")
 

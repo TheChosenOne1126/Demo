@@ -7,15 +7,13 @@
 #include "Abilities/GameplayAbility.h"
 #include "DGameplayAbility.generated.h"
 
-UCLASS(Abstract)
-class DEMO_API UDGameplayAbility : public UGameplayAbility, public IUnLuaInterface
+UCLASS(Abstract, HideCategories = (CoolDowns))
+class DEMO_API UDGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
 	UDGameplayAbility();
-	
-	virtual FString GetModuleName_Implementation() const override;
 	
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
@@ -32,18 +30,6 @@ public:
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo) const override;
-
-	virtual bool CheckCost(
-		const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo,
-		FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
-
-	virtual void ApplyCost(
-		const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo) const override;
-	
-	virtual UGameplayEffect* GetCooldownGameplayEffect() const override;
 	
 protected:
 	virtual void ActivateAbility(
@@ -58,18 +44,20 @@ protected:
 		bool bReplicateEndAbility,
 		bool bWasCancelled) override;
 	
-	UFUNCTION(BlueprintImplementableEvent)
-	float LuaObtainCooldownMagnitude() const;
-	
-	UPROPERTY()
-	FGameplayTagContainer CooldownTags;
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	bool LuaObtainCostInfo(TMap<FGameplayTag, float>& OutCostInfo) const;
+	void OnGameplayTagEvent(const FGameplayTag Tag, int32 Count);
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnInitialized(const FGameplayAbilityActorInfo& ActorInfo);
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeInitialized(const FGameplayAbilityActorInfo& ActorInfo);
+	
+	UPROPERTY()
+	FGameplayTagContainer CooldownTags;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Tags")
+	FGameplayTagContainer ActivationCancelTags;
+	
+private:
+	TMap<FGameplayTag, FDelegateHandle> ActivationCancelTagToHandleMap;
 };

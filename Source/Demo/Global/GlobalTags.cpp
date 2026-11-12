@@ -9,6 +9,7 @@ namespace GlobalTags
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(IMC, "InputMappingContext", "Input Mapping Context Root Tag(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(PAWN, "Pawn", "Pawn Root Tag(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(CM, "CameraModifier", "Camera Modifier Root Tag(Native)")
+	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(UI_CLASS, "UI.Class", "UI Widget Class Tag(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(GA_INPUT_PRESS, "GA.Input.Pressed", "Ability Activation Input Pressed(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(GA_INPUT_HELD, "GA.Input.Held", "Ability Activation Input Held(Native)")
 	DEMO_API UE_DEFINE_GAMEPLAY_TAG_COMMENT(GA_PASSIVE, "GA.Passive", "Ability Activation Auto(Native)")

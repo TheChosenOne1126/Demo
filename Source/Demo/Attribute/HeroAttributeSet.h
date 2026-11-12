@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
-#include "Component/DAbilitySystemComponent.h"
+#include "Ability/DAbilitySystemComponent.h"
 #include "HeroAttributeSet.generated.h"
 
 UCLASS()

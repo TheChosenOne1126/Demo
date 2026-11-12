@@ -16,11 +16,13 @@ class DEMO_API ADGameMode : public AGameMode
 	GENERATED_BODY()
 	
 public:
-	virtual APawn* SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform) override;
+	ADGameMode();
+	
+	virtual APawn* SpawnDefaultPawnFor_Implementation(AController* NewPlayer, AActor* StartSpot) override;
 
 protected:
 	virtual void OnPostLogin(AController* NewPlayer) override;
 
 	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag DefaultPawnTag;
+	bool bDefaultSpawnPawn;
 };

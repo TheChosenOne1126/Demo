@@ -7,6 +7,7 @@
 #include "Engine/DataAsset.h"
 #include "GameDataAsset.generated.h"
 
+class UUIDataAsset;
 class UGameplayEffect;
 class UMontageDataAsset;
 class UInputDataAsset;
@@ -81,6 +82,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FCameraModifierType> CameraModifierTypes;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UUIDataAsset> UIDataAsset;
 	
 #if WITH_EDITOR
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;

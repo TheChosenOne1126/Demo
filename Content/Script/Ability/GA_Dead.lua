@@ -1,5 +1,5 @@
 ---@type GA_Dead
-local M = UnLua.Class("Ability.GameplayAbility")
+local M = UnLua.Class("")
 local GameplayTags = require("GameplayTags")
 
 ---@param EventData FGameplayEventData

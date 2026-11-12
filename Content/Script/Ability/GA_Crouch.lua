@@ -1,5 +1,5 @@
 ---@type GA_Crouch_C
-local M = UnLua.Class("Ability.GameplayAbility")
+local M = UnLua.Class("")
 local Utils = require("Utils")
 local GameplayTags = require("GameplayTags")
 
@@ -130,7 +130,7 @@ function M:K2_ActivateAbility()
 
     if self:IsLocallyControlled() then
         local Params = UE.FGameplayCueParameters()
-        Params.Instigator = self:GetPlayerControllerFromActorInfo()
+        Params.Instigator = self:GetActorInfo().PlayerController
 
         if Avatar:CanCrouch() then
             Avatar:Crouch(false)

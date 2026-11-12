@@ -1,5 +1,5 @@
 ---@type GA_Kwang_MeleeAttack_C
-local M = UnLua.Class("Ability.GameplayAbility")
+local M = UnLua.Class("")
 local GameplayTags = require("GameplayTags")
 local Utils = require("Utils")
 

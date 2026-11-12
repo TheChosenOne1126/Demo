@@ -11,14 +11,12 @@
 #include "DPlayerController.generated.h"
 
 UCLASS()
-class DEMO_API ADPlayerController : public APlayerController, public IUnLuaInterface, public IPawnTagInterface
+class DEMO_API ADPlayerController : public APlayerController, public IPawnTagInterface
 {
 	GENERATED_BODY()
 
 public:
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
-	
-	virtual FString GetModuleName_Implementation() const override;
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

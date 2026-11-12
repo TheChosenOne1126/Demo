@@ -1,5 +1,5 @@
 ---@type GA_Stealth_Att_C
-local M = UnLua.Class("Ability.GameplayAbility")
+local M = UnLua.Class("")
 local Utils = require("Utils")
 local GameplayTags = require("GameplayTags")
 local Enum = require("Enum")

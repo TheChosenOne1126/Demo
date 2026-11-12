@@ -4,7 +4,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "DAssetManager.h"
-#include "Component/DAbilitySystemComponent.h"
+#include "Ability/DAbilitySystemComponent.h"
 #include "Interface/SweepInterface.h"
 
 DEMO_API DEFINE_LOG_CATEGORY(LogDemoGame)

@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "DGameInstance.h"
+
+#include "DAssetManager.h"
 #include "DemoSettings.h"
 #include "Statics.h"
 #include "Blueprint/UserWidget.h"
@@ -26,6 +28,9 @@ void UDGameInstance::Init()
 	
 		LoadingScreenClass = DemoSettings->LoadingScreenWidgetClassPath.LoadSynchronous();
 	}
+	
+	UDAssetManager& AssetManager = UDAssetManager::Get();
+	AssetManager.LoadGameData();
 }
 
 FString UDGameInstance::GetModuleName_Implementation() const

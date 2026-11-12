@@ -3,30 +3,40 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Subsystems/LocalPlayerSubsystem.h"
 #include "GlobalUISubsystem.generated.h"
 
-/**
- * 
- */
+class UGameDataAsset;
+
 UCLASS()
 class DEMO_API UGlobalUISubsystem : public ULocalPlayerSubsystem
 {
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintCosmetic)
-	void SetUpLoadingScreenWidget(TSubclassOf<UUserWidget> LoadingScreenWidgetClass);
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	
-	UFUNCTION(BlueprintCosmetic)
-	void CloseLoadingScreenWidget();
+	virtual void Deinitialize() override;
 	
-	UFUNCTION(BlueprintCosmetic)
-	UUserWidget* CreateUIWidget(TSubclassOf<UUserWidget> WidgetClass) const;
+	UFUNCTION(BlueprintCosmetic, BlueprintCallable)
+	UUserWidget* CreateUIWidget(UPARAM(meta=(GameplayTagFilter="UI")) FGameplayTag UITag);
 	
-	UFUNCTION(BlueprintCosmetic)
-	void CloseUIWidget(UUserWidget* Widget) const;
+	UFUNCTION(BlueprintCosmetic, BlueprintCallable)
+	void CloseUIWidget(UPARAM(meta=(GameplayTagFilter="UI")) FGameplayTag UITag);
+	
+protected:
+	void OnGameDataLoadedCallback(const UGameDataAsset* GameDataAsset);
 	
 private:
-	TSharedPtr<SWidget> LoadingScreenWidget;
+	FDelegateHandle OnGameDataLoadedHandle;
+	
+	UPROPERTY()
+	TMap<FGameplayTag, TSubclassOf<UUserWidget>> TagToClassMap;
+	
+	UPROPERTY()
+	TMap<FGameplayTag, int> TagToZOrderMap;
+	
+	UPROPERTY()
+	TMap<FGameplayTag, TWeakObjectPtr<UUserWidget>> TagToInstanceMap;
 };

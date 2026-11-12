@@ -1,25 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "DGameMode.h"
-#include "Global/Statics.h"
-#include "Player/DCharacter.h"
 #include "Player/DPlayerController.h"
 
-APawn* ADGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform)
+ADGameMode::ADGameMode()
 {
-	FActorSpawnParameters SpawnInfo;
-	SpawnInfo.Instigator = GetInstigator();
-	SpawnInfo.ObjectFlags |= RF_Transient;	// We never want to save default player pawns into a map
-	UClass* PawnClass = GetDefaultPawnClassForController(NewPlayer);
-	ADCharacter* ResultPawn = GetWorld()->SpawnActor<ADCharacter>(PawnClass, SpawnTransform, SpawnInfo);
+	bDefaultSpawnPawn = false;
+}
 
-	if (!ResultPawn)
+APawn* ADGameMode::SpawnDefaultPawnFor_Implementation(AController* NewPlayer, AActor* StartSpot)
+{
+	if (!bDefaultSpawnPawn)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("SpawnDefaultPawnAtTransform: Failed to spawn Pawn of type %s at %s"),
-			*GetNameSafe(PawnClass), *SpawnTransform.ToHumanReadableString()));
+		return nullptr;
 	}
 	
-	return ResultPawn;
+	return Super::SpawnDefaultPawnFor_Implementation(NewPlayer, StartSpot);
 }
 
 void ADGameMode::OnPostLogin(AController* NewPlayer)
@@ -27,7 +23,7 @@ void ADGameMode::OnPostLogin(AController* NewPlayer)
 	Super::OnPostLogin(NewPlayer);
 	
 	ADPlayerController* PC = Cast<ADPlayerController>(NewPlayer);
-	if (!IsValid(PC))
+	if (IsValid(PC))
 	{
 		PC->ClientPostLogin();
 	}

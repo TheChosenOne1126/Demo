@@ -8,6 +8,8 @@
 
 class UGameDataAsset;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FGameDataLoadedDelegate, const UGameDataAsset*);
+
 UCLASS(Config = Game)
 class DEMO_API UDAssetManager : public UAssetManager
 {
@@ -18,7 +20,7 @@ public:
 	
 	UGameDataAsset* GetGameDataAsset() const;
 	
-	FSimpleMulticastDelegate OnGameDataLoaded;
+	FGameDataLoadedDelegate OnGameDataLoaded;
 
 	void LoadGameData();
 	

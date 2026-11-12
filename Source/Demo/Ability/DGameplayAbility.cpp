@@ -10,11 +10,6 @@ UDGameplayAbility::UDGameplayAbility()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-FString UDGameplayAbility::GetModuleName_Implementation() const
-{
-	return TEXT("Ability.GameplayAbility");
-}
-
 void UDGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	UGameplayEffect* CooldownEffect = GetCooldownGameplayEffect();
@@ -109,55 +104,7 @@ void UDGameplayAbility::ApplyCooldown(
 	}
 	
 	EffectSpecHandle.Data->DynamicGrantedTags.AppendTags(CooldownTags);
-	const float Magnitude = LuaObtainCooldownMagnitude();
-	EffectSpecHandle.Data->SetSetByCallerMagnitude(GlobalTags::SETBYCALLER_GA_COOLDOWN, Magnitude);
 	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, EffectSpecHandle);
-}
-
-bool UDGameplayAbility::CheckCost(
-	const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo,
-	FGameplayTagContainer* OptionalRelevantTags) const
-{
-	TMap<FGameplayTag, float> CostInfo;
-	return !LuaObtainCostInfo(CostInfo) || CostInfo.IsEmpty() || Super::CheckCost(Handle, ActorInfo, OptionalRelevantTags);
-}
-
-void UDGameplayAbility::ApplyCost(
-	const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo) const
-{
-	const UGameplayEffect* CostEffect = GetCostGameplayEffect();
-	TMap<FGameplayTag, float> CostInfo;
-	if (!IsValid(CostEffect) || !LuaObtainCostInfo(CostInfo) || CostInfo.IsEmpty())
-	{
-		return;
-	}
-
-	const FGameplayEffectSpecHandle& EffectSpecHandle = MakeOutgoingGameplayEffectSpec(Handle, ActorInfo, ActivationInfo, CostEffect->GetClass());
-	if (EffectSpecHandle.IsValid())
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid EffectSpecHandle"), __FUNCTION__));
-		return;
-	}
-
-	for (const auto& [CostTag, CostValue] : CostInfo)
-	{
-		EffectSpecHandle.Data->SetSetByCallerMagnitude(CostTag, CostValue);
-	}
-	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, EffectSpecHandle);
-}
-
-UGameplayEffect* UDGameplayAbility::GetCooldownGameplayEffect() const
-{
-	UGameplayEffect* CooldownEffect = Super::GetCooldownGameplayEffect();
-	if (IsValid(CooldownEffect))
-	{
-		return CooldownEffect;
-	}
-	
-	return nullptr;
 }
 
 void UDGameplayAbility::ActivateAbility(
@@ -194,6 +141,12 @@ void UDGameplayAbility::ActivateAbility(
 	}
 
 	ActorInfo->AbilitySystemComponent->AddLooseGameplayTags(AbilitySpec->GetDynamicSpecSourceTags());
+
+	for (const FGameplayTag& Tag : ActivationCancelTags)
+	{
+		ActivationCancelTagToHandleMap.Emplace(Tag) = ActorInfo->AbilitySystemComponent->RegisterGameplayTagEvent(Tag).AddUObject(
+			this, &ThisClass::OnGameplayTagEvent);
+	}
 }
 
 void UDGameplayAbility::EndAbility(
@@ -231,4 +184,17 @@ void UDGameplayAbility::EndAbility(
 	Asc->RemoveLooseGameplayTags(AbilitySpec->GetDynamicSpecSourceTags());
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UDGameplayAbility::OnGameplayTagEvent(const FGameplayTag Tag, int32 Count)
+{
+	if (!ActivationCancelTagToHandleMap.Contains(Tag))
+	{
+		return;
+	}
+	
+	if (Count > 0)
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+	}
 }

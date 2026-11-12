@@ -2,7 +2,7 @@
 
 #include "DCharacter.h"
 #include "Ability/DGameplayAbility.h"
-#include "Component/DAbilitySystemComponent.h"
+#include "Ability/DAbilitySystemComponent.h"
 #include "DataAsset/AbilityDataAsset.h"
 #include "DataAsset/GameDataAsset.h"
 #include "GameFramework/PlayerState.h"

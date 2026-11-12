@@ -2,7 +2,7 @@
 
 #include "DPlayerState.h"
 #include "Attribute/BaseAttributeSet.h"
-#include "Component/DAbilitySystemComponent.h"
+#include "Ability/DAbilitySystemComponent.h"
 #include "DataAsset/AbilityDataAsset.h"
 #include "Global/GlobalTags.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -21,11 +21,6 @@ ADPlayerState::ADPlayerState()
 UAbilitySystemComponent* ADPlayerState::GetAbilitySystemComponent() const
 {
 	return Asc;
-}
-
-FString ADPlayerState::GetModuleName_Implementation() const
-{
-	return TEXT("Player.PlayerState");
 }
 
 void ADPlayerState::NetMulticastShowDamageNumber_Implementation(float DamageValue, FGameplayTagContainer DamageTags)

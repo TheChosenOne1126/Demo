@@ -21,6 +21,11 @@ UGameDataAsset* UDAssetManager::GetGameDataAsset() const
 
 void UDAssetManager::LoadGameData()
 {
+	if (::IsValid(GameDataAsset))
+	{
+		return;
+	}
+	
 	const UDemoSettings* DemoSettings = GetDefault<UDemoSettings>();
 	if (!::IsValid(DemoSettings))
 	{
@@ -40,7 +45,7 @@ void UDAssetManager::LoadGameData()
 		this, [this]() -> void
 		{
 			GameDataAsset = PawnDataHandle.IsValid() ? PawnDataHandle->GetLoadedAsset<UGameDataAsset>() : nullptr;
-			OnGameDataLoaded.Broadcast();
+			OnGameDataLoaded.Broadcast(GameDataAsset);
 		}));
 }
 

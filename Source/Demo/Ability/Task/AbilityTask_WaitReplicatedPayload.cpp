@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "AbilityTask_WaitReplicatedPayload.h"
-#include "Component/DAbilitySystemComponent.h"
+#include "Ability/DAbilitySystemComponent.h"
 
 UAbilityTask_WaitReplicatedPayload* UAbilityTask_WaitReplicatedPayload::WaitReplicatedPayload(
 	UGameplayAbility* OwningAbility,

@@ -12,7 +12,7 @@
 class UDAbilitySystemComponent;
 
 UCLASS()
-class DEMO_API ADPlayerState : public APlayerState, public IAbilitySystemInterface, public IUnLuaInterface
+class DEMO_API ADPlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -21,8 +21,6 @@ public:
 	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
-	virtual FString GetModuleName_Implementation() const override;
-
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastShowDamageNumber(float DamageValue, FGameplayTagContainer DamageTags);
 

@@ -2,7 +2,7 @@
 
 #include "DPlayerController.h"
 #include "EnhancedInputComponent.h"
-#include "Component/DAbilitySystemComponent.h"
+#include "Ability/DAbilitySystemComponent.h"
 #include "DataAsset/InputDataAsset.h"
 #include "GameFramework/PlayerState.h"
 #include "Global/GlobalTags.h"
@@ -27,11 +27,6 @@ void ADPlayerController::PostProcessInput(const float DeltaTime, const bool bGam
 	}
 	
 	Asc->ProcessAbilityInput();
-}
-
-FString ADPlayerController::GetModuleName_Implementation() const
-{
-	return TEXT("Player.PlayerController");
 }
 
 void ADPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
