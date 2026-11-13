@@ -8,7 +8,6 @@
 #include "Statics.generated.h"
 
 class UDAbilitySystemComponent;
-class USweepComponent;
 
 DEMO_API DECLARE_LOG_CATEGORY_EXTERN(LogDemoGame, Log, All);
 
@@ -40,8 +39,14 @@ public:
 	static UDAbilitySystemComponent* GetAscFromActor(AActor* Actor);
 	
 	UFUNCTION(BlueprintPure, Category = "Asset")
-	static bool GetPlayerType(const FGameplayTag& Tag, FPlayerType& OutPlayerType);
+	static bool GetPlayerTypeByTag(UPARAM(ref) const FGameplayTag& Tag, FPlayerType& OutPlayerType);
 	
 	UFUNCTION(BlueprintPure, Category = "Asset")
-	static bool GetPawnType(const FGameplayTag& Tag, FPawnType& OutPawnType);
+	static bool GetPawnTypeByTag(UPARAM(ref) const FGameplayTag& Tag, FPawnType& OutPawnType);
+	
+	UFUNCTION(BlueprintPure, Category = "Asset")
+	static bool GetGEClassByTag(UPARAM(ref) const FGameplayTag& Tag, TSubclassOf<UGameplayEffect>& OutGEClass);
+	
+	UFUNCTION(BlueprintPure, Category = "Asset")
+	static bool GetCMClassByTag(UPARAM(ref) const FGameplayTag& Tag, TSubclassOf<UCameraModifier>& OutCMClass);
 };

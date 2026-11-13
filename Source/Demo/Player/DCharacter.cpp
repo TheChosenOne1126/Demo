@@ -47,7 +47,7 @@ void ADCharacter::PossessedBy(AController* NewController)
 	if (PS->IsABot())
 	{
 		FPawnType PawnData;
-		if (!UStatics::GetPawnType(Tag, PawnData))
+		if (!UStatics::GetPawnTypeByTag(Tag, PawnData))
 		{
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid PawnData"), __FUNCTION__));
 			return;
@@ -58,7 +58,7 @@ void ADCharacter::PossessedBy(AController* NewController)
 	else
 	{
 		FPlayerType PlayerData;
-		if (!UStatics::GetPlayerType(Tag, PlayerData))
+		if (!UStatics::GetPlayerTypeByTag(Tag, PlayerData))
 		{
 			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid PlayerData"), __FUNCTION__));
 			return;

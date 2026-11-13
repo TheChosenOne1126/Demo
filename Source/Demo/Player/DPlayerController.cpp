@@ -54,7 +54,7 @@ void ADPlayerController::OnRep_PlayerTag()
 	}
 	
 	FPlayerType PlayerData;
-	if (!UStatics::GetPlayerType(PlayerTag, PlayerData))
+	if (!UStatics::GetPlayerTypeByTag(PlayerTag, PlayerData))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid PawnData"), __FUNCTION__));
 		return;

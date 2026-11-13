@@ -1,39 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "GlobalUISubsystem.h"
+#include "WidgetLPSubsystem.h"
 #include "Blueprint/UserWidget.h"
 #include "DataAsset/UIDataAsset.h"
 #include "Global/DAssetManager.h"
 #include "Global/Statics.h"
-#include "Interface/WidgetInterface.h"
 
-void UGlobalUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
-{
-	Super::Initialize(Collection);
-
-	const UGameDataAsset* DataAsset = UDAssetManager::Get().GetGameDataAsset();
-	if (!IsValid(DataAsset))
-	{
-		OnGameDataLoadedHandle = UDAssetManager::Get().OnGameDataLoaded.AddUObject(this, &UGlobalUISubsystem::OnGameDataLoadedCallback);
-	}
-	else
-	{
-		OnGameDataLoadedCallback(DataAsset);
-	}
-}
-
-void UGlobalUISubsystem::Deinitialize()
-{
-	if (OnGameDataLoadedHandle.IsValid())
-	{
-		UDAssetManager::Get().OnGameDataLoaded.Remove(OnGameDataLoadedHandle);
-		OnGameDataLoadedHandle.Reset();
-	}
-	
-	Super::Deinitialize();
-}
-
-UUserWidget* UGlobalUISubsystem::CreateUIWidget(FGameplayTag UITag)
+UUserWidget* UWidgetLPSubsystem::CreateUIWidget(FGameplayTag UITag)
 {
 	if (!UITag.IsValid())
 	{
@@ -45,16 +18,22 @@ UUserWidget* UGlobalUISubsystem::CreateUIWidget(FGameplayTag UITag)
 	{
 		return TagToInstanceMap.FindRef(UITag).Get();
 	}
+	
+	TSubclassOf<UUserWidget> WidgetClass;
+	int ZOrder = 0;
+	if (!UDAssetManager::Get().TryGetUIDataConfigByTag(UITag, WidgetClass, ZOrder))
+	{
+		UStatics::Log(this, ELogType::Error, FString::Printf(
+			TEXT("%hs: failed to get UIDataConfig Tag: [%s]"), __FUNCTION__, *UITag.ToString()));
+		return nullptr;
+	}
 
-	const TSubclassOf<UUserWidget> WidgetClass = TagToClassMap.FindChecked(UITag);
 	if (!IsValid(WidgetClass))
 	{
 		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid GameInstance"), __FUNCTION__));
 		return nullptr;
 	}
-	
-	int ZOrder = TagToZOrderMap.FindRef(UITag);
-	
+
 	ULocalPlayer* LocalPlayer = GetLocalPlayer();
 	if (!IsValid(LocalPlayer))
 	{
@@ -89,7 +68,7 @@ UUserWidget* UGlobalUISubsystem::CreateUIWidget(FGameplayTag UITag)
 	return Widget;
 }
 
-void UGlobalUISubsystem::CloseUIWidget(FGameplayTag UITag)
+void UWidgetLPSubsystem::CloseUIWidget(FGameplayTag UITag)
 {
 	if (!UITag.IsValid())
 	{
@@ -125,25 +104,4 @@ void UGlobalUISubsystem::CloseUIWidget(FGameplayTag UITag)
 	}
 	
 	ViewportClient->RemoveViewportWidgetForPlayer(LocalPlayer, Widget->TakeWidget());
-}
-
-void UGlobalUISubsystem::OnGameDataLoadedCallback(const UGameDataAsset* GameDataAsset)
-{
-	if (!IsValid(GameDataAsset))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid GameDataAsset"), __FUNCTION__));
-		return;
-	}
-	
-	if (!IsValid(GameDataAsset->UIDataAsset))
-	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UIDataAsset"), __FUNCTION__));
-		return;
-	}
-
-	for (const FUIType& UIType : GameDataAsset->UIDataAsset->UITypes)
-	{
-		TagToClassMap.Emplace(UIType.UITag, UIType.WidgetClass);
-		TagToZOrderMap.Emplace(UIType.UITag, UIType.ZOrder);
-	}
 }

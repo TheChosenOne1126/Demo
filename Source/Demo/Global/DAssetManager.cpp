@@ -46,7 +46,63 @@ void UDAssetManager::LoadGameData()
 		{
 			GameDataAsset = PawnDataHandle.IsValid() ? PawnDataHandle->GetLoadedAsset<UGameDataAsset>() : nullptr;
 			OnGameDataLoaded.Broadcast(GameDataAsset);
+			
+			for (const FGameplayEffectType& GEType : GameDataAsset->GameplayEffectTypes)
+			{
+				GEClassMap.Emplace(GEType.Tag, GEType.GameplayEffectClass);
+			}
+			
+			if (!::IsValid(GameDataAsset->UIDataAsset))
+			{
+				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UIDataAsset"), __FUNCTION__));
+				return;
+			}
+
+			for (const FUIType& UIType : GameDataAsset->UIDataAsset->UITypes)
+			{
+				UIDataConfigMap.Emplace(UIType.UITag, UIType.Config);
+			}
+			
+			for (const FCameraModifierType& CMType : GameDataAsset->CameraModifierTypes)
+			{
+				CMClassMap.Emplace(CMType.Tag, CMType.CameraModifierClass);
+			}
 		}));
+}
+
+bool UDAssetManager::TryGetUIDataConfigByTag(const FGameplayTag& Tag, TSubclassOf<UUserWidget>& Class, int& ZOrder) const
+{
+	const FUIDataConfig* Property = UIDataConfigMap.Find(Tag);
+	if (!Property)
+	{
+		return false;
+	}
+	
+	Class = Property->WidgetClass;
+	ZOrder = Property->ZOrder;
+	return true;
+}
+
+bool UDAssetManager::TryGetGEClassByTag(const FGameplayTag& Tag, TSubclassOf<UGameplayEffect>& Class) const
+{
+	if (GEClassMap.Contains(Tag))
+	{
+		Class = GEClassMap.FindRef(Tag);
+		return true;
+	}
+	
+	return false;
+}
+
+bool UDAssetManager::TryGetCMClassByTag(const FGameplayTag& Tag, TSubclassOf<UCameraModifier>& Class) const
+{
+	if (CMClassMap.Contains(Tag))
+	{
+		Class = CMClassMap.FindRef(Tag);
+		return true;
+	}
+	
+	return false;
 }
 
 void UDAssetManager::StartInitialLoading()

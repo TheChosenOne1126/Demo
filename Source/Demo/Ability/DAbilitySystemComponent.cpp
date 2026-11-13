@@ -3,6 +3,7 @@
 #include "DAbilitySystemComponent.h"
 #include "Animation/DAnimInstance.h"
 #include "DataAsset/AbilityDataAsset.h"
+#include "Global/DAssetManager.h"
 #include "Global/GlobalTags.h"
 #include "Global/Statics.h"
 

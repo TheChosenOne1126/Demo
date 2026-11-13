@@ -143,7 +143,7 @@ UDAbilitySystemComponent* UStatics::GetAscFromActor(AActor* Actor)
 	return Asc;
 }
 
-bool UStatics::GetPlayerType(const FGameplayTag& Tag, FPlayerType& OutPlayerType)
+bool UStatics::GetPlayerTypeByTag(const FGameplayTag& Tag, FPlayerType& OutPlayerType)
 {
 	const UDAssetManager& AssetManager = UDAssetManager::Get();
 	
@@ -176,7 +176,7 @@ bool UStatics::GetPlayerType(const FGameplayTag& Tag, FPlayerType& OutPlayerType
 	return true;
 }
 
-bool UStatics::GetPawnType(const FGameplayTag& Tag, FPawnType& OutPawnType)
+bool UStatics::GetPawnTypeByTag(const FGameplayTag& Tag, FPawnType& OutPawnType)
 {
 	const UDAssetManager& AssetManager = UDAssetManager::Get();
 	
@@ -207,4 +207,30 @@ bool UStatics::GetPawnType(const FGameplayTag& Tag, FPawnType& OutPawnType)
 	
 	OutPawnType = *PawnType;
 	return true;
+}
+
+bool UStatics::GetGEClassByTag(const FGameplayTag& Tag, TSubclassOf<UGameplayEffect>& OutGEClass)
+{
+	const UDAssetManager& AssetManager = UDAssetManager::Get();
+	
+	if (!Tag.IsValid())
+	{
+		Log(&AssetManager, ELogType::Error, FString::Printf(TEXT("%hs: invalid Tag"), __FUNCTION__));
+		return false;
+	}
+	
+	return AssetManager.TryGetGEClassByTag(Tag, OutGEClass);
+}
+
+bool UStatics::GetCMClassByTag(const FGameplayTag& Tag, TSubclassOf<UCameraModifier>& OutCMClass)
+{
+	const UDAssetManager& AssetManager = UDAssetManager::Get();
+	
+	if (!Tag.IsValid())
+	{
+		Log(&AssetManager, ELogType::Error, FString::Printf(TEXT("%hs: invalid Tag"), __FUNCTION__));
+		return false;
+	}
+	
+	return AssetManager.TryGetCMClassByTag(Tag, OutCMClass);
 }

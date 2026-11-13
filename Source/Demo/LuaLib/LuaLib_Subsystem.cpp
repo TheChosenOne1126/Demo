@@ -1,6 +1,6 @@
 #include "UnLuaEx.h"
 #include "UnLuaBase.h"
-#include "UI/GlobalUISubsystem.h"
+#include "UI/WidgetLocalPlayerSubsystem.h"
 using namespace UnLua;
 
 static int32 UGlobalUISubsystem_Get(lua_State* L)
@@ -40,7 +40,7 @@ static int32 UGlobalUISubsystem_Get(lua_State* L)
 		return luaL_error(L, "invalid local player");
 	}
 	
-	UGlobalUISubsystem* GlobalUISubsystem = LocalPlayer->GetSubsystem<UGlobalUISubsystem>();
+	UWidgetLocalPlayerSubsystem* GlobalUISubsystem = LocalPlayer->GetSubsystem<UWidgetLocalPlayerSubsystem>();
 	PushUObject(L, GlobalUISubsystem);
 	
 	return 1;
@@ -51,6 +51,6 @@ static constexpr luaL_Reg UGlobalUISubsystemLib[] = {
 	{ nullptr, nullptr }
 };
 
-BEGIN_EXPORT_REFLECTED_CLASS(UGlobalUISubsystem)
+BEGIN_EXPORT_REFLECTED_CLASS(UWidgetLocalPlayerSubsystem)
 	ADD_LIB(UGlobalUISubsystemLib)
 END_EXPORT_CLASS()

@@ -8,6 +8,18 @@
 #include "UIDataAsset.generated.h"
 
 USTRUCT(BlueprintType)
+struct FUIDataConfig
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = false))
+	TSubclassOf<UUserWidget> WidgetClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	int ZOrder = 0;
+};
+
+USTRUCT(BlueprintType)
 struct FUIType
 {
 	GENERATED_BODY()
@@ -15,11 +27,8 @@ struct FUIType
 	UPROPERTY(EditDefaultsOnly, meta = (Categories = "UI.Class"))
 	FGameplayTag UITag;
 	
-	UPROPERTY(EditDefaultsOnly, meta = (AllowAbstract = false))
-	TSubclassOf<UUserWidget> WidgetClass;
-	
 	UPROPERTY(EditDefaultsOnly)
-	int ZOrder = 0;
+	FUIDataConfig Config;
 };
 
 UCLASS()

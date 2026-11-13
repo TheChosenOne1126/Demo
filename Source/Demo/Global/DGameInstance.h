@@ -16,7 +16,4 @@ public:
 	virtual void Init() override;
 	
 	virtual FString GetModuleName_Implementation() const override;
-	
-	UPROPERTY(Transient)
-	TSubclassOf<UUserWidget> LoadingScreenClass;
 };
