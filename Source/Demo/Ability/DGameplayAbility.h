@@ -52,6 +52,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeInitialized(const FGameplayAbilityActorInfo& ActorInfo);
 	
+	UFUNCTION(BlueprintCallable)
+	FGameplayEffectSpecHandle MakeOutgoingGESpecByTag(UPARAM(ref) const FGameplayTag& Tag, float Level = 1.f) const;
+	
 	UPROPERTY()
 	FGameplayTagContainer CooldownTags;
 	

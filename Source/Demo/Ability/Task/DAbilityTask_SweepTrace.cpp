@@ -3,7 +3,7 @@
 #include "DAbilityTask_SweepTrace.h"
 #include "AbilitySystemComponent.h"
 #include "Engine/OverlapResult.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 
 UDAbilityTask_SweepTrace::UDAbilityTask_SweepTrace()
 {
@@ -28,7 +28,7 @@ void UDAbilityTask_SweepTrace::TickTask(float DeltaTime)
 	const UWorld* World = GetWorld();
 	if (!IsValid(World))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid World"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid World"), __FUNCTION__));
 		return;
 	}
 	
@@ -75,7 +75,7 @@ void UDAbilityTask_SweepTrace::StartLogic(bool bInitialOverlap)
 	
 	if (!SweptComponent.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid NewSweptComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid NewSweptComponent"), __FUNCTION__));
 		return;
 	}
 
@@ -93,7 +93,7 @@ void UDAbilityTask_SweepTrace::StartLogic(bool bInitialOverlap)
 	const UWorld* World = GetWorld();
 	if (!IsValid(World))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid World"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid World"), __FUNCTION__));
 		return;
 	}
 
@@ -137,7 +137,7 @@ void UDAbilityTask_SweepTrace::Activate()
 			QueryParams.AddIgnoredActor(Avatar);
 		}
 
-		SweptComponent = UStatics::FindSweptComponent(GetAvatarActor());
+		SweptComponent = UStaticLib::FindSweptComponent(GetAvatarActor());
 		if (!SweptComponent.IsValid())
 		{
 			return;
@@ -174,7 +174,7 @@ void UDAbilityTask_SweepTrace::TriggerOnSwept(TArray<FHitResult>& HitResults) co
 {
 	if (!IsValid(Ability))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
 		return;
 	}
 	
@@ -185,7 +185,7 @@ void UDAbilityTask_SweepTrace::TriggerOnSwept(TArray<FHitResult>& HitResults) co
 
 	if (!AbilitySystemComponent.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 

@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Statics.h"
+#include "StaticLib.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "DAssetManager.h"
@@ -16,7 +16,7 @@ static FAutoConsoleVariableRef CVarMaxAbilityTaskCount(
 	TEXT("Global Variable duration to display Log String on screen.")
 );
 
-void UStatics::Log(const UObject* Object, ELogType Type, const FString& String, bool bDisplayToScreen)
+void UStaticLib::Log(const UObject* Object, ELogType Type, const FString& String, bool bDisplayToScreen)
 {
 #if UE_BUILD_SHIPPING && !USE_LOGGING_IN_SHIPPING
 	return;
@@ -104,7 +104,7 @@ void UStatics::Log(const UObject* Object, ELogType Type, const FString& String, 
 	}
 }
 
-bool UStatics::IsShippingBuild()
+bool UStaticLib::IsShippingBuild()
 {
 #if UE_BUILD_SHIPPING
 	return true;
@@ -113,7 +113,7 @@ bool UStatics::IsShippingBuild()
 	return false;
 }
 
-UPrimitiveComponent* UStatics::FindSweptComponent(AActor* Owner)
+UPrimitiveComponent* UStaticLib::FindSweptComponent(AActor* Owner)
 {
 	if (!IsValid(Owner))
 	{
@@ -130,7 +130,7 @@ UPrimitiveComponent* UStatics::FindSweptComponent(AActor* Owner)
 	return ISweepInterface::Execute_GetSweptComponent(Owner);
 }
 
-UDAbilitySystemComponent* UStatics::GetAscFromActor(AActor* Actor)
+UDAbilitySystemComponent* UStaticLib::GetAscFromActor(AActor* Actor)
 {
 	UDAbilitySystemComponent* Asc = Cast<UDAbilitySystemComponent>(
 		UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Actor, false));
@@ -143,7 +143,7 @@ UDAbilitySystemComponent* UStatics::GetAscFromActor(AActor* Actor)
 	return Asc;
 }
 
-bool UStatics::GetPlayerTypeByTag(const FGameplayTag& Tag, FPlayerType& OutPlayerType)
+bool UStaticLib::GetPlayerTypeByTag(const FGameplayTag& Tag, FPlayerType& OutPlayerType)
 {
 	const UDAssetManager& AssetManager = UDAssetManager::Get();
 	
@@ -176,7 +176,7 @@ bool UStatics::GetPlayerTypeByTag(const FGameplayTag& Tag, FPlayerType& OutPlaye
 	return true;
 }
 
-bool UStatics::GetPawnTypeByTag(const FGameplayTag& Tag, FPawnType& OutPawnType)
+bool UStaticLib::GetPawnTypeByTag(const FGameplayTag& Tag, FPawnType& OutPawnType)
 {
 	const UDAssetManager& AssetManager = UDAssetManager::Get();
 	
@@ -209,7 +209,7 @@ bool UStatics::GetPawnTypeByTag(const FGameplayTag& Tag, FPawnType& OutPawnType)
 	return true;
 }
 
-bool UStatics::GetGEClassByTag(const FGameplayTag& Tag, TSubclassOf<UGameplayEffect>& OutGEClass)
+bool UStaticLib::GetGEClassByTag(const FGameplayTag& Tag, TSubclassOf<UGameplayEffect>& OutGEClass)
 {
 	const UDAssetManager& AssetManager = UDAssetManager::Get();
 	
@@ -222,7 +222,7 @@ bool UStatics::GetGEClassByTag(const FGameplayTag& Tag, TSubclassOf<UGameplayEff
 	return AssetManager.TryGetGEClassByTag(Tag, OutGEClass);
 }
 
-bool UStatics::GetCMClassByTag(const FGameplayTag& Tag, TSubclassOf<UCameraModifier>& OutCMClass)
+bool UStaticLib::GetCMClassByTag(const FGameplayTag& Tag, TSubclassOf<UCameraModifier>& OutCMClass)
 {
 	const UDAssetManager& AssetManager = UDAssetManager::Get();
 	

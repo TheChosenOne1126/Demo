@@ -16,7 +16,7 @@ void FDemoEditorModule::StartupModule()
 	RegisterStartupCallbackHandle = UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateLambda([]() -> void
 	{
 		RegisterPlayToolbarButton();
-		RegisterAssetContextMenu();
+		//RegisterAssetContextMenu();
 	}));
 }
 

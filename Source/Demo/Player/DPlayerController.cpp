@@ -6,7 +6,7 @@
 #include "DataAsset/InputDataAsset.h"
 #include "GameFramework/PlayerState.h"
 #include "Global/GlobalTags.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -19,10 +19,10 @@ void ADPlayerController::PostProcessInput(const float DeltaTime, const bool bGam
 		return;
 	}
 	
-	UDAbilitySystemComponent* Asc = UStatics::GetAscFromActor(PlayerState);
+	UDAbilitySystemComponent* Asc = UStaticLib::GetAscFromActor(PlayerState);
 	if (!IsValid(Asc))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid Asc"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid Asc"), __FUNCTION__));
 		return;
 	}
 	
@@ -43,26 +43,26 @@ void ADPlayerController::OnRep_PlayerTag()
 	UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent);
 	if (!IsValid(EIC))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UEnhancedInputComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UEnhancedInputComponent"), __FUNCTION__));
 		return;
 	}
 	
 	if (!PlayerTag.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid PlayerTag"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid PlayerTag"), __FUNCTION__));
 		return;
 	}
 	
 	FPlayerType PlayerData;
-	if (!UStatics::GetPlayerTypeByTag(PlayerTag, PlayerData))
+	if (!UStaticLib::GetPlayerTypeByTag(PlayerTag, PlayerData))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid PawnData"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid PawnData"), __FUNCTION__));
 		return;
 	}
 	
 	if (!IsValid(PlayerData.InputDataAsset))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid InputDataAsset"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid InputDataAsset"), __FUNCTION__));
 		return;
 	}
 
@@ -71,14 +71,14 @@ void ADPlayerController::OnRep_PlayerTag()
 		const FGameplayTag& Tag = InputType.InputTag;
 		if (!Tag.IsValid())
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputType Invalid InputTag"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputType Invalid InputTag"), __FUNCTION__));
 			continue;
 		}
 
 		const UInputAction* Action = InputType.InputAction;
 		if (!IsValid(Action))
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputType Invalid InputAction"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputType Invalid InputAction"), __FUNCTION__));
 			continue;
 		}
 		
@@ -94,13 +94,13 @@ void ADPlayerController::OnRep_PlayerTag()
 		const FGameplayTag& Tag = AbilityInputType.InputTag;
 		if (!Tag.IsValid())
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: AbilityInput Invalid InputTag"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: AbilityInput Invalid InputTag"), __FUNCTION__));
 			continue;
 		}
 
 		if (!IsValid(AbilityInputType.InputAction))
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: AbilityInput Invalid InputAction"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: AbilityInput Invalid InputAction"), __FUNCTION__));
 			continue;
 		}
 		
@@ -183,7 +183,7 @@ void ADPlayerController::OnMoveInput(const FInputActionValue& Value) const
 	APawn* P = GetPawn();
 	if (!IsValid(P))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid Pawn"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid Pawn"), __FUNCTION__));
 		return;
 	}
 
@@ -218,10 +218,10 @@ void ADPlayerController::OnLookInput(const FInputActionValue& Value)
 
 void ADPlayerController::OnAbilityTrigger(const FGameplayTag& Tag) const
 {
-	UDAbilitySystemComponent* Asc = UStatics::GetAscFromActor(PlayerState);
+	UDAbilitySystemComponent* Asc = UStaticLib::GetAscFromActor(PlayerState);
 	if (!IsValid(Asc))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UDAbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UDAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 
@@ -231,10 +231,10 @@ void ADPlayerController::OnAbilityTrigger(const FGameplayTag& Tag) const
 
 void ADPlayerController::OnAbilityStart(const FGameplayTag& Tag) const
 {
-	UDAbilitySystemComponent* Asc = UStatics::GetAscFromActor(PlayerState);
+	UDAbilitySystemComponent* Asc = UStaticLib::GetAscFromActor(PlayerState);
 	if (!IsValid(Asc))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UDAbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UDAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 
@@ -243,10 +243,10 @@ void ADPlayerController::OnAbilityStart(const FGameplayTag& Tag) const
 
 void ADPlayerController::OnAbilityCancel(const FGameplayTag& Tag) const
 {
-	UDAbilitySystemComponent* Asc = UStatics::GetAscFromActor(PlayerState);
+	UDAbilitySystemComponent* Asc = UStaticLib::GetAscFromActor(PlayerState);
 	if (!IsValid(Asc))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UDAbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid UDAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 	

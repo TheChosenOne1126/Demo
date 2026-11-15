@@ -2,7 +2,7 @@
 
 #include "AbilityTask_TickBoxOverlap.h"
 #include "Engine/OverlapResult.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 
 UAbilityTask_TickBoxOverlap::UAbilityTask_TickBoxOverlap()
 {
@@ -31,7 +31,7 @@ void UAbilityTask_TickBoxOverlap::TickTask(float DeltaTime)
 	const UWorld* World = GetWorld();
 	if (!IsValid(World))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs invalid UWorld"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs invalid UWorld"), __FUNCTION__));
 		return;
 	}
 	

@@ -1,33 +1,33 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "MessageSubsystem.h"
-#include "Statics.h"
+#include "StaticLib.h"
 
 UMessageSubsystem* UMessageSubsystem::Get(const UObject* WorldContext)
 {
 	if (!IsValid(WorldContext))
 	{
-		UStatics::Log(WorldContext, ELogType::Error, FString::Printf(TEXT("%hs: invalid World Context"), __FUNCTION__));
+		UStaticLib::Log(WorldContext, ELogType::Error, FString::Printf(TEXT("%hs: invalid World Context"), __FUNCTION__));
 		return nullptr;
 	}
 
 	if (!IsValid(GEngine))
 	{
-		UStatics::Log(WorldContext, ELogType::Error, FString::Printf(TEXT("%hs: invalid GEngine"), __FUNCTION__));
+		UStaticLib::Log(WorldContext, ELogType::Error, FString::Printf(TEXT("%hs: invalid GEngine"), __FUNCTION__));
 		return nullptr;
 	}
 
 	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContext, EGetWorldErrorMode::ReturnNull);
 	if (!IsValid(World))
 	{
-		UStatics::Log(WorldContext, ELogType::Error, FString::Printf(TEXT("%hs: invalid GEngine"), __FUNCTION__));
+		UStaticLib::Log(WorldContext, ELogType::Error, FString::Printf(TEXT("%hs: invalid GEngine"), __FUNCTION__));
 		return nullptr;
 	}
 
 	const UGameInstance* GameInstance = World->GetGameInstance();
 	if (!IsValid(GameInstance))
 	{
-		UStatics::Log(WorldContext, ELogType::Error, FString::Printf(TEXT("%hs: invalid GEngine"), __FUNCTION__));
+		UStaticLib::Log(WorldContext, ELogType::Error, FString::Printf(TEXT("%hs: invalid GEngine"), __FUNCTION__));
 		return nullptr;
 	}
 
@@ -48,7 +48,7 @@ FGuid UMessageSubsystem::RegisterMessageInternal(
 {
 	if (!MessageTag.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid MessageTag"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid MessageTag"), __FUNCTION__));
 		return FGuid();
 	}
 	
@@ -90,7 +90,7 @@ void UMessageSubsystem::UnregisterMessage(FGameplayTag MessageTag, FGuid Message
 
 	if (Index == INDEX_NONE)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in MessageLists"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in MessageLists"), __FUNCTION__));
 		return;
 	}
 
@@ -105,7 +105,7 @@ void UMessageSubsystem::BroadcastMessageInternal(FGameplayTag MessageTag, const 
 {
 	if (!MessageTag.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid MessageTag"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid MessageTag"), __FUNCTION__));
 		return;
 	}
 	
@@ -117,7 +117,7 @@ void UMessageSubsystem::BroadcastMessageInternal(FGameplayTag MessageTag, const 
 
 	if (Index == INDEX_NONE)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in MessageLists"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: none Index in MessageLists"), __FUNCTION__));
 		return;
 	}
 

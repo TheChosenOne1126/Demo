@@ -2,7 +2,7 @@
 
 #include "AbilityTask_SyncTargetData.h"
 #include "AbilitySystemComponent.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 
 UAbilityTask_SyncTargetData* UAbilityTask_SyncTargetData::SyncTargetData(UGameplayAbility* OwningAbility, bool bOnlySyncOnce)
 {
@@ -20,7 +20,7 @@ void UAbilityTask_SyncTargetData::CallServerSetTargetData(const FGameplayAbility
 	
 	if (!AbilitySystemComponent.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 	
@@ -29,7 +29,7 @@ void UAbilityTask_SyncTargetData::CallServerSetTargetData(const FGameplayAbility
 
 	if (!Handle.IsValid() || !Key.IsValidKey())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Handle or Key"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Handle or Key"), __FUNCTION__));
 		return;
 	}
 	
@@ -42,7 +42,7 @@ void UAbilityTask_SyncTargetData::OnDestroy(bool bInOwnerFinished)
 	{
 		if (!AbilitySystemComponent.IsValid())
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
 			return;
 		}
 
@@ -51,7 +51,7 @@ void UAbilityTask_SyncTargetData::OnDestroy(bool bInOwnerFinished)
 
 		if (!Handle.IsValid() || !Key.IsValidKey())
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Handle or Key"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Handle or Key"), __FUNCTION__));
 			return;
 		}
 		AbilitySystemComponent->AbilityTargetDataSetDelegate(Handle, Key).RemoveAll(this);
@@ -68,7 +68,7 @@ void UAbilityTask_SyncTargetData::Activate()
 	{
 		if (!AbilitySystemComponent.IsValid())
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
 			return;
 		}
 
@@ -77,7 +77,7 @@ void UAbilityTask_SyncTargetData::Activate()
 
 		if (!Handle.IsValid() || !Key.IsValidKey())
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Handle or Key"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Handle or Key"), __FUNCTION__));
 			return;
 		}
 		
@@ -93,7 +93,7 @@ void UAbilityTask_SyncTargetData::OnTargetDataSet(const FGameplayAbilityTargetDa
 {
 	if (!AbilitySystemComponent.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 	
@@ -102,7 +102,7 @@ void UAbilityTask_SyncTargetData::OnTargetDataSet(const FGameplayAbilityTargetDa
 
 	if (!Handle.IsValid() || !Key.IsValidKey())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Handle or Key"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Handle or Key"), __FUNCTION__));
 		return;
 	}
 	AbilitySystemComponent->ConsumeClientReplicatedTargetData(Handle, Key);

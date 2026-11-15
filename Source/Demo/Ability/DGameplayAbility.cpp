@@ -3,7 +3,7 @@
 #include "DGameplayAbility.h"
 #include "AbilitySystemComponent.h"
 #include "Global/GlobalTags.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 
 UDGameplayAbility::UDGameplayAbility()
 {
@@ -58,19 +58,19 @@ void UDGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, 
 
 	if (Spec.Level <= 0)
 	{
-		UStatics::Log(this, ELogType::Log, FString::Printf(TEXT("%hs: AbilitySpec Level is less or equal than 0"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Log, FString::Printf(TEXT("%hs: AbilitySpec Level is less or equal than 0"), __FUNCTION__));
 		return;
 	}
 
 	if (!ActorInfo)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilityActorInfo"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilityActorInfo"), __FUNCTION__));
 		return;
 	}
 	
 	if (!ActorInfo->AbilitySystemComponent.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UAbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 
@@ -99,7 +99,7 @@ void UDGameplayAbility::ApplyCooldown(
 	const FGameplayEffectSpecHandle& EffectSpecHandle = MakeOutgoingGameplayEffectSpec(Handle, ActorInfo, ActivationInfo, CooldownEffect->GetClass());
 	if (EffectSpecHandle.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid EffectSpecHandle"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid EffectSpecHandle"), __FUNCTION__));
 		return;
 	}
 	
@@ -117,26 +117,26 @@ void UDGameplayAbility::ActivateAbility(
 
 	if (!ActorInfo)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilityActorInfo"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilityActorInfo"), __FUNCTION__));
 		return;
 	}
 
 	if (!ActorInfo->AbilitySystemComponent.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UDAbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UDAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 
 	if (!Handle.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilitySpecHandle"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilitySpecHandle"), __FUNCTION__));
 		return;
 	}
 	
 	FGameplayAbilitySpec* AbilitySpec = ActorInfo->AbilitySystemComponent->FindAbilitySpecFromHandle(Handle);
 	if (!AbilitySpec)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilitySpec"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilitySpec"), __FUNCTION__));
 		return;
 	}
 
@@ -157,27 +157,27 @@ void UDGameplayAbility::EndAbility(
 {
 	if (!ActorInfo)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilityActorInfo"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilityActorInfo"), __FUNCTION__));
 		return;
 	}
 
 	const TWeakObjectPtr<UAbilitySystemComponent> Asc = ActorInfo->AbilitySystemComponent;
 	if (!Asc.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UDAbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UDAbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 
 	if (!Handle.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilitySpecHandle"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilitySpecHandle"), __FUNCTION__));
 		return;
 	}
 	
 	FGameplayAbilitySpec* AbilitySpec = Asc->FindAbilitySpecFromHandle(Handle);
 	if (!AbilitySpec)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilitySpec"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid FGameplayAbilitySpec"), __FUNCTION__));
 		return;
 	}
 
@@ -197,4 +197,23 @@ void UDGameplayAbility::OnGameplayTagEvent(const FGameplayTag Tag, int32 Count)
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 	}
+}
+
+FGameplayEffectSpecHandle UDGameplayAbility::MakeOutgoingGESpecByTag(const FGameplayTag& Tag, float Level) const
+{
+	if (!Tag.IsValid())
+	{
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Tag"), __FUNCTION__));
+		return FGameplayEffectSpecHandle();
+	}
+	
+	TSubclassOf<UGameplayEffect> GEClass;
+	if (!UStaticLib::GetGEClassByTag(Tag, GEClass))
+	{
+		UStaticLib::Log(this, ELogType::Error,
+			FString::Printf(TEXT("%hs: failed to get GEClass Tag: [%s]"), __FUNCTION__, *Tag.ToString()));
+		return FGameplayEffectSpecHandle();
+	}
+	
+	return MakeOutgoingGameplayEffectSpec(GEClass, Level);
 }

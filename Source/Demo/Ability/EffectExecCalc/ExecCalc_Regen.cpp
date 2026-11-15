@@ -2,7 +2,7 @@
 
 #include "ExecCalc_Regen.h"
 #include "Attribute/BaseAttributeSet.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 
 UExecCalc_Regen::UExecCalc_Regen()
 {
@@ -33,7 +33,7 @@ void UExecCalc_Regen::Execute_Implementation(
 	float HpRegen = 0.f;
 	if (!ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HpRegenCaptureDef, EvaluateParams, HpRegen))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Failed to Calculate HpRegen Captured"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Failed to Calculate HpRegen Captured"), __FUNCTION__));
 		return;
 	}
 
@@ -45,7 +45,7 @@ void UExecCalc_Regen::Execute_Implementation(
 	float MpRegen = 0.f;
 	if (!ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(MpRegenCaptureDef, EvaluateParams, MpRegen))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Failed to Calculate MpRegen Captured"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Failed to Calculate MpRegen Captured"), __FUNCTION__));
 		return;
 	}
 

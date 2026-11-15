@@ -2,7 +2,7 @@
 
 #include "DAssetManager.h"
 #include "DemoSettings.h"
-#include "Statics.h"
+#include "StaticLib.h"
 #include "DataAsset/GameDataAsset.h"
 
 UDAssetManager& UDAssetManager::Get()
@@ -29,13 +29,13 @@ void UDAssetManager::LoadGameData()
 	const UDemoSettings* DemoSettings = GetDefault<UDemoSettings>();
 	if (!::IsValid(DemoSettings))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Demo Settings"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Demo Settings"), __FUNCTION__));
 		return;
 	}
 
 	if (DemoSettings->GameDataAssetPath.IsNull())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Null Pawn Data Asset Path"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Null Pawn Data Asset Path"), __FUNCTION__));
 		return;
 	}
 
@@ -54,7 +54,7 @@ void UDAssetManager::LoadGameData()
 			
 			if (!::IsValid(GameDataAsset->UIDataAsset))
 			{
-				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UIDataAsset"), __FUNCTION__));
+				UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid UIDataAsset"), __FUNCTION__));
 				return;
 			}
 
@@ -118,13 +118,13 @@ void UDAssetManager::StartInitialLoading()
 	const UDemoSettings* DemoSettings = GetDefault<UDemoSettings>();
 	if (!::IsValid(DemoSettings))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Demo Settings"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Demo Settings"), __FUNCTION__));
 		return;
 	}
 
 	if (DemoSettings->GameDataAssetPath.IsNull())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Null Pawn Data Asset Path"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Null Pawn Data Asset Path"), __FUNCTION__));
 		return;
 	}
 	

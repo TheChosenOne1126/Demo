@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "DataAsset/GameDataAsset.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "Statics.generated.h"
+#include "StaticLib.generated.h"
 
 class UDAbilitySystemComponent;
 
@@ -22,7 +22,7 @@ enum class ELogType : uint8
 };
 
 UCLASS()
-class DEMO_API UStatics : public UBlueprintFunctionLibrary
+class DEMO_API UStaticLib : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

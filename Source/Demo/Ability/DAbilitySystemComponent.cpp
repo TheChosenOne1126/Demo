@@ -5,7 +5,7 @@
 #include "DataAsset/AbilityDataAsset.h"
 #include "Global/DAssetManager.h"
 #include "Global/GlobalTags.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 
 void UDAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
@@ -38,7 +38,7 @@ void UDAbilitySystemComponent::NotifyAbilityEnded(FGameplayAbilitySpecHandle Han
 	}
 	else
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
 	}
 	
 	Super::NotifyAbilityEnded(Handle, Ability, bWasCancelled);
@@ -168,7 +168,7 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 		const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
 		if (!Spec)
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputStart invalid AbilitySpec"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputStart invalid AbilitySpec"), __FUNCTION__));
 			return;
 		}
 		
@@ -177,7 +177,7 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 			const UGameplayAbility* Ability = Spec->GetPrimaryInstance();
 			if (!IsValid(Ability))
 			{
-				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputStart invalid Ability"), __FUNCTION__));
+				UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputStart invalid Ability"), __FUNCTION__));
 				return;
 			}
 		
@@ -195,7 +195,7 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 		const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
 		if (!Spec)
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputTrigger invalid AbilitySpec"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputTrigger invalid AbilitySpec"), __FUNCTION__));
 			return;
 		}
 		
@@ -204,7 +204,7 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 			const UGameplayAbility* Ability = Spec->GetPrimaryInstance();
 			if (!IsValid(Ability))
 			{
-				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputTrigger invalid Ability"), __FUNCTION__));
+				UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputTrigger invalid Ability"), __FUNCTION__));
 				return;
 			}
 		
@@ -227,7 +227,7 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 		const FGameplayAbilitySpec* Spec = FindAbilitySpecFromHandle(Handle);
 		if (!Spec)
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputCancel invalid AbilitySpec"), __FUNCTION__));
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputCancel invalid AbilitySpec"), __FUNCTION__));
 			return;
 		}
 		
@@ -236,7 +236,7 @@ void UDAbilitySystemComponent::ProcessAbilityInput()
 			const UGameplayAbility* Ability = Spec->GetPrimaryInstance();
 			if (!IsValid(Ability))
 			{
-				UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputCancel invalid Ability"), __FUNCTION__));
+				UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: InputCancel invalid Ability"), __FUNCTION__));
 				return;
 			}
 		
@@ -257,7 +257,7 @@ void UDAbilitySystemComponent::AbilityForInputStart(const FGameplayTag& InputTag
 	{
 		if (!IsValid(Spec.Ability))
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(
 				TEXT("%hs: invalid Ability, InputTag: [%s]"), __FUNCTION__, *InputTag.ToString()));
 			continue;
 		}
@@ -278,7 +278,7 @@ void UDAbilitySystemComponent::AbilityForInputTrigger(const FGameplayTag& InputT
 	{
 		if (!IsValid(Spec.Ability))
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(
 				TEXT("%hs: invalid Ability, InputTag: [%s]"), __FUNCTION__, *InputTag.ToString()));
 			continue;
 		}
@@ -299,7 +299,7 @@ void UDAbilitySystemComponent::AbilityForInputCancel(const FGameplayTag& InputTa
 	{
 		if (!IsValid(Spec.Ability))
 		{
-			UStatics::Log(this, ELogType::Error, FString::Printf(
+			UStaticLib::Log(this, ELogType::Error, FString::Printf(
 				TEXT("%hs: invalid Ability, InputTag: [%s]"), __FUNCTION__, *InputTag.ToString()));
 			continue;
 		}

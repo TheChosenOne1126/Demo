@@ -2,13 +2,13 @@
 
 #include "DAnimInstance.h"
 #include "AbilitySystemComponent.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 
 void UDAnimInstance::InitializeTagsByAbilitySystem(UAbilitySystemComponent* Asc)
 {
 	if (!IsValid(Asc))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid AbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: Invalid AbilitySystemComponent"), __FUNCTION__));
 		return;
 	}
 

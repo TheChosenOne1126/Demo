@@ -4,7 +4,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "GameFramework/Character.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 
 void UAbilityTask_PlayMontageAndWaitForEvent::OnMontageBlendedIn(UAnimMontage* Montage) const
 {
@@ -134,27 +134,27 @@ void UAbilityTask_PlayMontageAndWaitForEvent::Activate()
 	
 	if (!IsValid(Ability))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
 		return;
 	}
 
 	UAbilitySystemComponent* Asc = GetTargetAsc();
 	if (!IsValid(Asc))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Asc"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Asc"), __FUNCTION__));
 		return;
 	}
 
 	if (!Asc->AbilityActorInfo.IsValid())
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid ActorInfo"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid ActorInfo"), __FUNCTION__));
 		return;
 	}
 
 	UAnimInstance* AnimInstance = Asc->AbilityActorInfo->GetAnimInstance();
 	if (!IsValid(AnimInstance))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AnimInstance"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AnimInstance"), __FUNCTION__));
 		return;
 	}
 
@@ -186,7 +186,7 @@ void UAbilityTask_PlayMontageAndWaitForEvent::Activate()
 	}
 	else
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: called in Ability %s failed to play montage %s"),
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: called in Ability %s failed to play montage %s"),
 			__FUNCTION__, *Ability->GetName(), *GetNameSafe(MontageToPlay)));
 		
 		if (ShouldBroadcastAbilityTaskDelegates())
@@ -203,27 +203,27 @@ bool UAbilityTask_PlayMontageAndWaitForEvent::StopPlayingMontage() const
 	const UAbilitySystemComponent* Asc = GetTargetAsc();
 	if (!IsValid(Asc))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Asc"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Asc"), __FUNCTION__));
 		return false;
 	}
 	
 	const FGameplayAbilityActorInfo* ActorInfo = Asc->AbilityActorInfo.Get();
 	if (!ActorInfo)
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid ActorInfo"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid ActorInfo"), __FUNCTION__));
 		return false;
 	}
 
 	const UAnimInstance* AnimInstance = ActorInfo->GetAnimInstance();
 	if (!IsValid(AnimInstance))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AnimInstance"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid AnimInstance"), __FUNCTION__));
 		return false;
 	}
 
 	if (!IsValid(Ability))
 	{
-		UStatics::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
+		UStaticLib::Log(this, ELogType::Error, FString::Printf(TEXT("%hs: invalid Ability"), __FUNCTION__));
 		return false;
 	}
 	

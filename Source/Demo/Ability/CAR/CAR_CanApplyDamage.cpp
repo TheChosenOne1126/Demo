@@ -4,7 +4,7 @@
 #include "AbilitySystemComponent.h"
 #include "GameplayEffect.h"
 #include "Global/GlobalTags.h"
-#include "Global/Statics.h"
+#include "Global/StaticLib.h"
 
 bool UCAR_CanApplyDamage::CanApplyGameplayEffect_Implementation(
 	const UGameplayEffect* GameplayEffect,
@@ -20,7 +20,7 @@ bool UCAR_CanApplyDamage::CanApplyGameplayEffect_Implementation(
 
 	if (!IsValid(Asc))
 	{
-		UStatics::Log(GameplayEffect, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
+		UStaticLib::Log(GameplayEffect, ELogType::Error, FString::Printf(TEXT("%hs: invalid AbilitySystemComponent"), __FUNCTION__));
 		return false;
 	}
 
